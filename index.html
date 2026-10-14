@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Muhammad's Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Noto+Naskh+Arabic:wght@500&display=swap">
+
+<script>
+/* ==========================================================================
+   LIBRARY DATA — add entries here. Newest dates sort first automatically.
+
+   { lang: "ar" | "en", kind: "book" | "doc",
+     title, type: "PDF" | "DOCX", date: "YYYY-MM-DD", author?, link? }
+
+   lang   "ar" = Arabic circle, "en" = English circle (Chinese goes here too)
+   kind   which tab it appears under: Books / Docs
+   link   optional. Only cards with a link lift on hover ("this opens").
+   ========================================================================== */
+const LIBRARY = [
+  { lang: "en", kind: "doc", type: "PDF", date: "2024-06-26", title: "2", link: "files/02.pdf" },
+  { lang: "en", kind: "doc", type: "PDF", date: "2024-06-21", title: "chinese", link: "files/03.pdf" },
+  { lang: "en", kind: "doc", type: "PDF", date: "2024-06-21", title: "english 1", link: "files/04.pdf" },
+  { lang: "en", kind: "doc", type: "DOCX", date: "2024-06-21", title: "english", link: "files/05.pdf" },
+  { lang: "en", kind: "doc", type: "DOCX", date: "2024-06-21", title: "chinese", link: "files/06.pdf" },
+  { lang: "en", kind: "doc", type: "DOCX", date: "2024-06-21", title: "2", link: "files/07.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "حاشية", link: "files/12.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-06-21", title: "منطق", link: "files/13.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "منطق", link: "files/14.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "صرف 1", link: "files/15.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-06-21", title: "صرف", link: "files/16.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "كامل", link: "files/17.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "كامل منطق", link: "files/18.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-06-21", title: "النحو (11)", link: "files/19.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-06-21", title: "النحو (11)", link: "files/20.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-05-27", title: "جامع المقدمات ٢", link: "files/21.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-05-12", title: "CamScanner 05-12-2024 10.10", link: "files/22.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-18", title: "CamScanner 17.04.2024 20.33", link: "files/23.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-18", title: "CamScanner 17.04.2024 20.13", link: "files/24.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-09", title: "CamScanner 04-09-2024 08.48", link: "files/25.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-09", title: "CamScanner 04-09-2024 08.37", link: "files/26.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-09", title: "CamScanner 04-09-2024 08.25", link: "files/27.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-09", title: "CamScanner 04-09-2024 08.23", link: "files/28.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-09", title: "CamScanner 04-08-2024 17.09", link: "files/29.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-07", title: "CamScanner 04-07-2024 10.11", link: "files/30.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-06", title: "CamScanner 04-06-2024 18.41", link: "files/31.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-05", title: "CamScanner 04-05-2024 11.59", link: "files/32.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-05", title: "CamScanner 04-05-2024 11.47", link: "files/33.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 10.42", link: "files/34.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 10.31", link: "files/35.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 10.12", link: "files/36.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 10.04", link: "files/37.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 09.59", link: "files/38.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 09.51", link: "files/39.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-03-22", title: "مبادئ الأصول 3", link: "files/40.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 11.47", link: "files/41.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 12.05", link: "files/42.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 10.17", link: "files/43.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 09.23", link: "files/44.pdf" },
+  { lang: "ar", kind: "doc", type: "DOCX", date: "2024-02-27", title: "111", link: "files/45.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2024-02-27", title: "111=", link: "files/46.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-18", title: "بداية الحكمة", author: "السيد محمد حسين الطباطبائي", link: "files/47.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-13", title: "شرح الرضي على الكافية — الجزء الرابع", link: "files/48.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-13", title: "شرح الرضي على الكافية — الجزء الثالث", link: "files/49.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-13", title: "شرح الرضي على الكافية — الجزء الثاني", link: "files/50.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-13", title: "شرح الرضي على الكافية — الجزء الأول", link: "files/51.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-13", title: "المطول شرح تلخيص مفتاح", link: "files/52.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2024-02-01", title: "مغني اللبيب عن كتب الأعاريب", author: "ابن هشام الأنصاري", link: "files/53.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-12-07", title: "الأنموذج في النحو", link: "files/54.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-11-22", title: "شرح الرضي لكافية ابن الحاجب 2", link: "files/55.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-11-22", title: "شرح الرضي لكافية ابن الحاجب", link: "files/56.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-11-22", title: "شرح كافية ابن الحاجب 3", link: "files/57.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-05-11", title: "Mabdau Al-Kiraa s perevodom", link: "files/58.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-07", title: "BO03311@1", link: "files/59.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "المرقاة في علم المنطق 2", link: "files/60.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "فتح ذي الجلال بترتيب الضروب والأشكال", link: "files/61.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2023-04-04", title: "الضابطة", link: "files/62.pdf" },
+  { lang: "ar", kind: "doc", type: "PDF", date: "2023-04-04", title: "تلخيص شرح التركماني في القياس", link: "files/63.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "حواشي الغجراتي على حاشية اليزدي على شرح الخبيصي على تهذيب", link: "files/64.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "رفع الغاشية عن غوامش الحاشية", author: "المدرس الأفغاني", link: "files/65.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "جامع المقدمات", author: "جمع من العلماء", link: "files/66.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "متن ألفية ابن مالك", link: "files/67.pdf" },
+  { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "متن التهذيب في المنطق", link: "files/68.pdf" },
+];
+</script>
+
+<style>
+/* Manuscript palette: parchment, green ink, antique gold. */
+:root {
+  --bg: #F6F0E3;
+  --surface: #FCF8EE;
+  --ink: #203D34;
+  --muted: #746B58;
+  --line: #DDD0B4;
+  --line-strong: #BEAA7B;
+  --book: #947030;
+  --doc: #396B66;
+  --fav: #245946;
+  --lift: 0 1px 2px rgb(24 24 20 / .05), 0 10px 24px -14px rgb(24 24 20 / .28);
+
+  --serif: "Newsreader", "Noto Naskh Arabic", Georgia, "Times New Roman", serif;
+  --sans: "Instrument Sans", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #2C241E;
+    --surface: #392E24;
+    --ink: #F0E6CE;
+    --muted: #BEB49D;
+    --line: #514332;
+    --line-strong: #807052;
+    --book: #D6B778;
+    --doc: #9EC3B8;
+    --fav: #A7C49B;
+    --lift: 0 1px 2px rgb(0 0 0 / .4), 0 12px 28px -14px rgb(0 0 0 / .8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #2C241E;
+  --surface: #392E24;
+  --ink: #F0E6CE;
+  --muted: #BEB49D;
+  --line: #514332;
+  --line-strong: #807052;
+  --book: #D6B778;
+  --doc: #9EC3B8;
+  --fav: #A7C49B;
+  --lift: 0 1px 2px rgb(0 0 0 / .4), 0 12px 28px -14px rgb(0 0 0 / .8);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-inline: 24px;
+  padding-block: 56px 112px;
+}
+
+/* Language circles */
+.langs { display: flex; gap: 16px; margin-bottom: 32px; }
+.langs button {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 15px/1 var(--sans);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease), border-color 160ms var(--ease);
+}
+.langs button:hover { border-color: var(--ink); }
+.langs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.langs button:focus-visible { border-radius: 50%; }
+
+/* Kind tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.tabs button {
+  --tab: var(--ink);
+  font: 500 15px/1 var(--sans);
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 12px 14px 12px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--tab); }
+.tabs button[data-kind="book"] { --tab: var(--book); }
+.tabs button[data-kind="doc"]  { --tab: var(--doc); }
+
+/* Grid */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+  transition: opacity 140ms var(--ease);
+}
+.grid.is-fading { opacity: 0; }
+
+.item { display: flex; transition: opacity 180ms var(--ease); }
+
+.card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.preview {
+  display: grid;
+  place-items: center;
+  width: 110px;
+  height: 150px;
+  overflow: visible;
+  margin: 0 auto 12px;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font: 500 12px/1 var(--sans);
+}
+.preview :is(canvas, img) {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 8px 20px -10px rgb(0 0 0 / .65);
+}
+.preview.is-error { height: 90px; }
+a.card {
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease), border-color 160ms var(--ease);
+}
+@media (hover: hover) {
+  a.card:hover { transform: translateY(-2px); }
+}
+a.card:focus-visible { outline-offset: 4px; border-radius: 3px; }
+
+.title {
+  margin: 0;
+  font: 500 1.3rem/1.35 var(--serif);
+  text-align: center;
+  text-wrap: balance;
+}
+.by { margin: 0; color: var(--muted); text-align: center; }
+
+.empty { margin: 8px 0 0; color: var(--muted); }
+
+@media (max-width: 600px) {
+  .wrap { padding-inline: 16px; padding-block: 32px 80px; }
+  .langs button { width: 68px; height: 68px; }
+  .grid { grid-template-columns: 1fr; gap: 14px; }
+}
+
+/* Reader */
+.reader {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  background: var(--bg);
+}
+.reader-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.reader-bar h2 { flex: 1; margin: 0; font: 500 1.05rem/1.3 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reader-bar .meta-r { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.reader-close {
+  font: 500 14px/1 var(--sans); color: var(--ink);
+  background: none; border: 1px solid var(--line-strong); border-radius: 8px;
+  padding: 9px 14px; cursor: pointer;
+}
+.reader-close:hover { border-color: var(--ink); }
+.pages { flex: 1; overflow: auto; padding: 20px 16px 60px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.page { width: min(100%, 900px); background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .15); position: relative; }
+.page canvas { display: block; width: 100%; height: 100%; }
+.reader-msg { color: var(--muted); margin: 40px auto; }
+body.reading { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grid, .item, a.card, .langs button { transition: none; }
+  a.card:hover { transform: none; }
+}
+
+/* Islamic manuscript-inspired details; book covers stay unframed. */
+body {
+  background-image: radial-gradient(ellipse at 50% 0, rgb(179 142 69 / .09), transparent 65%);
+}
+.wrap { padding-block-start: 28px; }
+.masthead { text-align: center; margin-bottom: 26px; }
+.illumination { display: flex; align-items: center; gap: 18px; color: var(--book); margin-bottom: 12px; }
+.illumination::before, .illumination::after {
+  content: ""; flex: 1; height: 5px;
+  border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line);
+}
+.rosette { width: 34px; height: 34px; flex: 0 0 34px; }
+.langs { justify-content: center; gap: 12px; margin-bottom: 22px; }
+.langs button {
+  width: 82px; height: 44px; border-radius: 24px 24px 5px 5px;
+  background: transparent; border-color: var(--line-strong); font-size: 13px;
+}
+.langs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.langs button:focus-visible { border-radius: 24px 24px 5px 5px; }
+.tabs { justify-content: center; gap: 24px; margin-bottom: 30px; border-bottom-color: var(--line-strong); }
+.tabs button { font: 500 18px/1 var(--serif); padding: 12px 18px; }
+.tabs button[aria-pressed="true"] { --tab: var(--book); }
+.grid { row-gap: 34px; }
+.title { line-height: 1.65; }
+.by { font-size: 13px; }
+.reader-bar { border-bottom-color: var(--line-strong); }
+.reader-close { border-radius: 4px; }
+@media (max-width: 600px) {
+  .wrap { padding-block-start: 20px; }
+  .masthead { margin-bottom: 20px; }
+  .tabs { gap: 12px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; }
+  .title { font-size: 1.15rem; overflow-wrap: anywhere; }
+  .by { font-size: 12px; }
+}
+
+/* Every collection uses upright volumes and continuous walnut shelves. */
+.grid[data-kind] {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 32px 0;
+  padding: 6px 0 0;
+}
+.grid[data-kind] .item { position: relative; min-width: 0; }
+.grid[data-kind] .item::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 180px; height: 19px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(2deg, transparent 0 3px, rgb(32 14 5 / .13) 4px, transparent 5px 8px),
+    linear-gradient(to bottom, #b58a55 0, #93683e 4px, #654227 5px, #795031 8px, #4a2e1c 17px, #352216 100%);
+  border-top: 1px solid #c99f67;
+  box-shadow: 0 9px 9px -5px rgb(0 0 0 / .5), 0 23px 24px -15px rgb(0 0 0 / .35);
+  z-index: 0;
+}
+.grid[data-kind] .card { min-width: 0; gap: 5px; padding: 0 16px; }
+.grid[data-kind] .preview {
+  width: 120px; height: 172px; margin: 8px auto 31px;
+  display: flex; justify-content: center; align-items: flex-end;
+  position: relative; z-index: 1; perspective: 700px;
+}
+.book-volume { display: inline-block; position: relative; line-height: 0; }
+.grid[data-kind] .book-volume {
+  transform: rotateY(-16deg); transform-origin: bottom center;
+  transition: transform 200ms var(--ease);
+  box-shadow: 5px 4px 6px rgb(0 0 0 / .32), 14px 5px 16px -8px rgb(0 0 0 / .55);
+}
+.grid[data-kind] .book-volume::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -7px; width: 8px;
+  background: linear-gradient(90deg, #17291f, #44604b 42%, #1b3024 80%, #101e17);
+  border-radius: 3px 0 0 2px; transform: skewY(-8deg); transform-origin: right;
+  box-shadow: inset 0 12px 0 -10px #ae8f50, inset 0 -12px 0 -10px #ae8f50;
+}
+.grid[data-kind] .book-volume::after {
+  content: ""; position: absolute; top: 2px; right: -5px; bottom: 1px; width: 5px;
+  background: repeating-linear-gradient(90deg, #dbd0b8 0 1px, #f5eedf 1px 2px);
+  transform: skewY(-12deg); transform-origin: left; border-right: 1px solid #a69a7e;
+}
+.grid[data-kind] .preview :is(canvas, img) {
+  position: relative; z-index: 1; border-radius: 1px 2px 2px 1px;
+  box-shadow: inset 3px 0 4px rgb(0 0 0 / .2);
+}
+.grid[data-kind] .title { font-size: 1.1rem; line-height: 1.6; }
+.grid[data-kind] .by { font-size: 12px; }
+@media (hover: hover) {
+  .grid[data-kind] a.card:hover { transform: none; }
+  .grid[data-kind] a.card:hover .book-volume { transform: translateY(-7px) rotateY(-5deg); }
+}
+.grid[data-kind] a.card:focus-visible .book-volume { transform: translateY(-7px) rotateY(-5deg); }
+@media (max-width: 600px) {
+  .grid[data-kind] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 0; }
+  .grid[data-kind] .card { padding-inline: 10px; }
+  .grid[data-kind] .preview { width: min(110px, 100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid[data-kind] .book-volume { transition: none; }
+  .grid[data-kind] a.card:hover .book-volume,
+  .grid[data-kind] a.card:focus-visible .book-volume { transform: rotateY(-16deg); }
+}
+
+/* Warm patterned walls and recessed walnut backing for the shelves. */
+body {
+  background-image:
+    radial-gradient(ellipse at 50% 0, rgb(206 164 93 / .16), transparent 70%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B89A60%22%20stroke-opacity%3D%22.12%22%20stroke-width%3D%22.7%22%3E%3Cpath%20d%3D%22M50%206%2063%2019%2081%2019%2081%2037%2094%2050%2081%2063%2081%2081%2063%2081%2050%2094%2037%2081%2019%2081%2019%2063%206%2050%2019%2037%2019%2019%2037%2019Z%22%2F%3E%3Cpath%20d%3D%22m50%2019%2031%2031-31%2031-31-31Z%20M0%200%2019%2019%20M81%2019%20100%200%20M81%2081%20100%20100%20M19%2081%200%20100%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-attachment: fixed;
+}
+.grid[data-kind], .empty {
+  --ink: #F4E7CD;
+  --muted: #D4BFA0;
+  color: var(--ink);
+  padding-top: 22px;
+  padding-bottom: 24px;
+  border-radius: 5px 5px 2px 2px;
+  background-color: #493020;
+  background-image:
+    linear-gradient(90deg, rgb(16 8 3 / .35), transparent 8% 92%, rgb(16 8 3 / .35)),
+    repeating-linear-gradient(90deg, transparent 0 83px, rgb(13 7 3 / .19) 84px, rgb(203 153 89 / .07) 86px, transparent 88px 170px),
+    repeating-linear-gradient(88deg, transparent 0 5px, rgb(218 170 108 / .035) 6px, transparent 8px 13px),
+    repeating-linear-gradient(92deg, rgb(12 6 2 / .04) 0 1px, transparent 2px 11px),
+    radial-gradient(ellipse at 50% 0, #785537, transparent 80%);
+  box-shadow: inset 0 10px 18px -6px rgb(0 0 0 / .5), 0 12px 24px -16px rgb(0 0 0 / .55);
+}
+.grid[data-kind] .title { text-shadow: 0 1px 2px rgb(0 0 0 / .35); }
+/* Empty shelves and reading room share the same visual treatment. */
+.empty {
+  margin: 0; padding: 76px 20px; text-align: center;
+  border-bottom: 14px solid #795031;
+  font: 400 18px/1.6 var(--serif);
+}
+.reader { background-image: inherit; background-attachment: fixed; }
+.reader-bar { box-shadow: 0 4px 12px rgb(0 0 0 / .16); }
+
+/* Traditional Islamic library: pointed niches and brass-inlaid walnut. */
+.masthead { margin-bottom: 18px; }
+.illumination { margin-bottom: 0; }
+.langs { margin-bottom: 14px; }
+.langs button { font-family: var(--serif); font-size: 16px; }
+.langs button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #694731, #3c281c);
+  color: #f4e7cb; border-color: #ac8c52;
+  box-shadow: inset 0 0 0 3px rgb(185 151 90 / .12);
+}
+.tabs { margin-bottom: 20px; border-bottom: 3px double var(--line-strong); }
+.grid[data-kind], .empty {
+  background-color: #352319;
+  background-image:
+    linear-gradient(90deg, rgb(12 6 2 / .4), transparent 9% 91%, rgb(12 6 2 / .4)),
+    repeating-linear-gradient(89deg, transparent 0 5px, rgb(204 157 96 / .035) 6px, transparent 8px 14px),
+    repeating-linear-gradient(92deg, rgb(12 6 2 / .07) 0 1px, transparent 2px 12px),
+    radial-gradient(ellipse at 50% 0, #715236, transparent 85%);
+  border-top: 3px double #9e804c;
+  border-bottom: 3px double #9e804c;
+  border-radius: 2px;
+}
+.grid[data-kind] .preview { margin-top: 46px; }
+.grid[data-kind] .item::after {
+  top: 218px; height: 20px; border-top-color: #b39459;
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2220%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23b59761%22%20stroke-opacity%3D%22.58%22%20stroke-width%3D%22.7%22%3E%3Cpath%20d%3D%22m0%2010%2010-5%2010%205-10%205Z%20m20%200%2010-5%2010%205-10%205Z%22%2F%3E%3Cpath%20d%3D%22M0%203h40M0%2017h40%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left center / 40px 20px repeat-x,
+    linear-gradient(to bottom, #a17d49, #6b492c 4px, #48301f 6px, #60422b 16px, #2c1b12);
+}
+.grid[data-kind] .title, .grid[data-kind] .by { position: relative; }
+.reader-bar { border-bottom: 3px double var(--line-strong); }
+
+/* Larger, front-facing covers with high-resolution first-page previews. */
+.grid[data-kind] {
+  --cover-height: 250px;
+  --cover-width: 180px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  row-gap: 38px;
+}
+.grid[data-kind] .preview {
+  width: min(var(--cover-width), 100%);
+  height: var(--cover-height);
+}
+.grid[data-kind] .item::after { top: calc(var(--cover-height) + 46px); }
+.grid[data-kind] .book-volume { transform: rotateY(-5deg); }
+.grid[data-kind] .title { font-size: 1.3rem; line-height: 1.65; color: #fff4df; }
+.grid[data-kind] .by { font-size: 14px; color: #e0cfb2; }
+@media (max-width: 600px) {
+  .grid[data-kind] {
+    --cover-height: 220px;
+    --cover-width: 150px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 30px;
+  }
+  .grid[data-kind] .title { font-size: 1.2rem; }
+}
+@media (max-width: 360px) {
+  .grid[data-kind] { grid-template-columns: 1fr; --cover-width: 180px; --cover-height: 250px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid[data-kind] a.card:hover .book-volume,
+  .grid[data-kind] a.card:focus-visible .book-volume { transform: rotateY(-5deg); }
+}
+.reader-close:disabled { opacity: .5; cursor: wait; }
+@media(max-width:480px) { .reader-bar { gap: 7px; padding-inline: 10px; } .reader-close { padding: 9px; } .reader-bar .meta-r { display: none; } }
+</style>
+</head>
+<body>
+
+<main class="wrap" id="main">
+  <header class="masthead">
+    <div class="illumination" aria-hidden="true">
+      <svg class="rosette" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M20 2 25.3 7.3 32.7 7.3 32.7 14.7 38 20 32.7 25.3 32.7 32.7 25.3 32.7 20 38 14.7 32.7 7.3 32.7 7.3 25.3 2 20 7.3 14.7 7.3 7.3 14.7 7.3Z"/>
+        <path d="m20 8 12 12-12 12L8 20Z"/><path d="M12 12h16v16H12Z"/>
+        <circle cx="20" cy="20" r="3" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <h1 class="sr-only">Library</h1>
+  </header>
+
+  <div class="langs" role="group" aria-label="Language" id="langs">
+    <button type="button" data-lang="ar" aria-pressed="true">Arabic</button>
+    <button type="button" data-lang="en" aria-pressed="false">English</button>
+  </div>
+
+  <div class="tabs" role="group" aria-label="Section" id="tabs">
+    <button type="button" data-kind="book" aria-pressed="true"></button>
+    <button type="button" data-kind="doc" aria-pressed="false"></button>
+  </div>
+
+  <ul class="grid" id="grid" aria-label="Library"></ul>
+  <p class="empty" id="empty" hidden></p>
+  <p class="sr-only" id="status" aria-live="polite"></p>
+</main>
+
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" hidden>
+  <div class="reader-bar">
+    <h2 id="reader-title" dir="auto"></h2>
+    <span class="meta-r" id="reader-count"></span>
+    <button type="button" class="reader-close" id="reader-download" disabled>Download</button>
+    <button type="button" class="reader-close" id="reader-close">Close</button>
+  </div>
+  <div class="pages" id="pages"></div>
+</div>
+
+<script src="vendor/pdf.min.js"></script>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const grid = $("grid"), empty = $("empty"), status = $("status");
+  const langBtns = [...$("langs").querySelectorAll("button")];
+  const tabBtns = [...$("tabs").querySelectorAll("button")];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const TEXT = { book: "Books", doc: "Docs", empty: "Nothing here yet." };
+
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v; else n.setAttribute(k, v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  }
+
+  function card(it) {
+    const preview = it.link
+      ? el("div", { class: "preview", "data-src": it.link, "aria-hidden": "true" },
+          el("span", { class: "preview-loading" }, "Loading preview…"))
+      : null;
+    const body = [
+      preview,
+      el("h2", { class: "title", dir: "auto" }, it.title),
+      it.author ? el("p", { class: "by", dir: "auto" }, it.author) : null,
+    ];
+    const c = it.link
+      ? el("a", { class: "card", href: it.link, "data-title": it.title }, ...body)
+      : el("article", { class: "card" }, ...body);
+    const li = el("li", { class: "item", "data-kind": it.kind, "data-lang": it.lang }, c);
+    return li;
+  }
+
+  const items = LIBRARY
+    .slice()
+    .map((it) => it.kind === "book" && it.type !== "PDF" ? { ...it, kind: "doc" } : it)
+    .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))
+    .map(card);
+  grid.append(...items);
+
+  let lang = "ar", kind = "book";
+
+  function fromHash() {
+    const m = /^#(ar|en)-(book|note|doc)$/.exec(location.hash);
+    if (m) {
+      lang = m[1];
+      kind = m[2] === "note" ? "doc" : m[2];
+      if (m[2] === "note") {
+        try { history.replaceState(null, "", location.pathname + location.search + `#${lang}-doc`); } catch {}
+      }
+    }
+  }
+
+  function applyView() {
+    grid.dataset.kind = kind;
+    const t = TEXT;
+    langBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    tabBtns.forEach((b) => {
+      b.textContent = t[b.dataset.kind];
+      b.setAttribute("aria-pressed", String(b.dataset.kind === kind));
+    });
+    for (const li of items) li.hidden = li.dataset.lang !== lang || li.dataset.kind !== kind;
+    updateStatus();
+  }
+
+  function updateStatus() {
+    const t = TEXT;
+    const inView = items.filter((li) => !li.hidden);
+    grid.hidden = !inView.length;
+    if (!inView.length) { empty.hidden = false; empty.textContent = status.textContent = t.empty; return; }
+    empty.hidden = true;
+    status.textContent = String(inView.length);
+  }
+
+  let fadeTimer;
+  function setView(nextLang, nextKind) {
+    if (nextLang === lang && nextKind === kind) return;
+    lang = nextLang; kind = nextKind;
+    try { history.replaceState(null, "", location.pathname + location.search + `#${lang}-${kind}`); } catch {}
+    clearTimeout(fadeTimer);
+    if (reduceMotion.matches) { applyView(); return; }
+    grid.classList.add("is-fading");
+    fadeTimer = setTimeout(() => {
+      applyView();
+      requestAnimationFrame(() => grid.classList.remove("is-fading"));
+    }, 140);
+  }
+
+  langBtns.forEach((b) => b.addEventListener("click", () => setView(b.dataset.lang, kind)));
+  tabBtns.forEach((b) => b.addEventListener("click", () => setView(lang, b.dataset.kind)));
+
+  /* Arrow keys move between buttons in a group. */
+  function arrowNav(btns, pick) {
+    btns.forEach((b, i) => b.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const forward = e.key === "ArrowRight";
+      const j = (i + (forward ? 1 : -1) + btns.length) % btns.length;
+      btns[j].focus();
+      pick(btns[j]);
+    }));
+  }
+  arrowNav(langBtns, (b) => setView(b.dataset.lang, kind));
+  arrowNav(tabBtns, (b) => setView(lang, b.dataset.kind));
+
+  window.addEventListener("hashchange", () => { fromHash(); applyView(); });
+
+  /* Reader — files open inside the page, rendered with PDF.js. */
+  const reader = $("reader"), pages = $("pages"), rTitle = $("reader-title"), rCount = $("reader-count");
+  let openDoc = null, observer = null, lastCard = null, thumbObserver = null;
+  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+
+  const hosted = ["muhammad-personal-library.muhammad2025.chatgpt.site", "chinenglish1-source.github.io"].includes(location.hostname);
+  const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg"},"files/03.pdf":{"cover":"covers/03.jpg"},"files/04.pdf":{"cover":"covers/04.jpg"},"files/05.pdf":{"cover":"covers/05.jpg"},"files/06.pdf":{"cover":"covers/06.jpg"},"files/07.pdf":{"cover":"covers/07.jpg"},"files/12.pdf":{"cover":"covers/12.jpg"},"files/13.pdf":{"cover":"covers/13.jpg"},"files/14.pdf":{"cover":"covers/14.jpg"},"files/15.pdf":{"cover":"covers/15.jpg"},"files/16.pdf":{"cover":"covers/16.jpg"},"files/17.pdf":{"cover":"covers/17.jpg"},"files/18.pdf":{"cover":"covers/18.jpg"},"files/19.pdf":{"cover":"covers/19.jpg"},"files/20.pdf":{"cover":"covers/20.jpg"},"files/21.pdf":{"cover":"covers/21.jpg"},"files/22.pdf":{"cover":"covers/22.jpg"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995},"files/24.pdf":{"cover":"covers/24.jpg"},"files/25.pdf":{"cover":"covers/25.jpg"},"files/26.pdf":{"cover":"covers/26.jpg"},"files/27.pdf":{"cover":"covers/27.jpg"},"files/28.pdf":{"cover":"covers/28.jpg"},"files/29.pdf":{"cover":"covers/29.jpg"},"files/30.pdf":{"cover":"covers/30.jpg"},"files/31.pdf":{"cover":"covers/31.jpg"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223},"files/33.pdf":{"cover":"covers/33.jpg"},"files/34.pdf":{"cover":"covers/34.jpg"},"files/35.pdf":{"cover":"covers/35.jpg"},"files/36.pdf":{"cover":"covers/36.jpg"},"files/37.pdf":{"cover":"covers/37.jpg"},"files/38.pdf":{"cover":"covers/38.jpg"},"files/39.pdf":{"cover":"covers/39.jpg"},"files/40.pdf":{"cover":"covers/40.jpg"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559},"files/45.pdf":{"cover":"covers/45.jpg"},"files/46.pdf":{"cover":"covers/46.jpg"},"files/47.pdf":{"cover":"covers/47.jpg"},"files/48.pdf":{"cover":"covers/48.jpg"},"files/49.pdf":{"cover":"covers/49.jpg"},"files/50.pdf":{"cover":"covers/50.jpg"},"files/51.pdf":{"cover":"covers/51.jpg"},"files/52.pdf":{"cover":"covers/52.jpg"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641},"files/54.pdf":{"cover":"covers/54.jpg"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788},"files/56.pdf":{"cover":"covers/56.jpg"},"files/57.pdf":{"cover":"covers/57.jpg"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454},"files/59.pdf":{"cover":"covers/59.jpg"},"files/60.pdf":{"cover":"covers/60.jpg"},"files/61.pdf":{"cover":"covers/61.jpg"},"files/62.pdf":{"cover":"covers/62.jpg"},"files/63.pdf":{"cover":"covers/63.jpg"},"files/64.pdf":{"cover":"covers/64.jpg"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201},"files/67.pdf":{"cover":"covers/67.jpg"},"files/68.pdf":{"cover":"covers/68.jpg"}};
+  async function pdfOptions(url) {
+    const options = {
+      cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
+      cMapPacked: true,
+      standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
+    };
+    const file = hosted && hostedFiles[url];
+    if (!file || !file.parts) return { ...options, url };
+    const data = new Uint8Array(file.size);
+    let offset = 0;
+    for (const part of file.parts) {
+      const response = await fetch(part);
+      if (!response.ok) throw new Error("File unavailable");
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      data.set(bytes, offset); offset += bytes.length;
+    }
+    if (offset !== file.size) throw new Error("Incomplete file");
+    return { ...options, data };
+  }
+
+  async function renderThumbnail(box) {
+    if (box.dataset.state) return;
+    box.dataset.state = "loading";
+    let doc = null;
+    try {
+      if (hosted && hostedFiles[box.dataset.src]) {
+        const cover = new Image();
+        cover.alt = "";
+        cover.src = hostedFiles[box.dataset.src].cover;
+        await cover.decode();
+        const scale = Math.min(box.clientWidth / cover.naturalWidth, box.clientHeight / cover.naturalHeight);
+        cover.style.width = `${Math.floor(cover.naturalWidth * scale)}px`;
+        cover.style.height = `${Math.floor(cover.naturalHeight * scale)}px`;
+        box.replaceChildren(el("span", { class: "book-volume" }, cover));
+        box.dataset.state = "ready";
+        return;
+      }
+      doc = await pdfjsLib.getDocument(await pdfOptions(box.dataset.src)).promise;
+      const page = await doc.getPage(1);
+      const base = page.getViewport({ scale: 1 });
+      const cssScale = Math.min((box.clientWidth || 260) / base.width, (box.clientHeight || 150) / base.height);
+      const scale = cssScale * Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+      const vp = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.floor(vp.width));
+      canvas.height = Math.max(1, Math.floor(vp.height));
+      canvas.style.width = `${Math.max(1, Math.floor(base.width * cssScale))}px`;
+      canvas.style.height = `${Math.max(1, Math.floor(base.height * cssScale))}px`;
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      box.replaceChildren(el("span", { class: "book-volume" }, canvas));
+      box.dataset.state = "ready";
+    } catch {
+      box.classList.add("is-error");
+      box.replaceChildren(el("span", {}, "Preview unavailable"));
+      box.dataset.state = "error";
+    } finally {
+      if (doc) doc.destroy();
+    }
+  }
+
+  if (window.pdfjsLib) {
+    thumbObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) if (entry.isIntersecting) {
+        thumbObserver.unobserve(entry.target);
+        renderThumbnail(entry.target);
+      }
+    }, { rootMargin: "600px 0px" });
+    document.querySelectorAll(".preview").forEach((box) => thumbObserver.observe(box));
+  }
+
+  async function openReader(href, title, card) {
+    lastCard = card;
+    $("reader-download").disabled = true;
+    rTitle.textContent = title;
+    rCount.textContent = "";
+    pages.replaceChildren(el("p", { class: "reader-msg" }, "Opening…"));
+    reader.hidden = false;
+    document.body.classList.add("reading");
+    $("reader-close").focus();
+    if (!window.pdfjsLib) { pages.replaceChildren(el("p", { class: "reader-msg" }, "Viewer failed to load.")); return; }
+    try {
+      const doc = await pdfjsLib.getDocument(await pdfOptions(href)).promise;
+      if (reader.hidden) { doc.destroy(); return; }
+      openDoc = doc;
+      $("reader-download").disabled = false;
+      rCount.textContent = `${doc.numPages} ${doc.numPages === 1 ? "page" : "pages"}`;
+      const first = await doc.getPage(1);
+      const vp = first.getViewport({ scale: 1 });
+      const boxes = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const box = el("div", { class: "page", "data-page": String(i) });
+        box.style.aspectRatio = `${vp.width} / ${vp.height}`;
+        boxes.push(box);
+      }
+      pages.replaceChildren(...boxes);
+      pages.scrollTop = 0;
+      observer = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { observer.unobserve(e.target); renderPage(doc, e.target); }
+      }, { root: pages, rootMargin: "800px 0px" });
+      boxes.forEach((b) => observer.observe(b));
+    } catch (err) {
+      pages.replaceChildren(el("p", { class: "reader-msg" }, "This file couldn't be opened."));
+    }
+  }
+
+  $("reader-download").addEventListener("click", async () => {
+    const doc = openDoc;
+    if (!doc) return;
+    const button = $("reader-download");
+    button.disabled = true;
+    try {
+      const data = await doc.getData();
+      const url = URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = (rTitle.textContent || "document") + ".pdf";
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch { button.textContent = "Retry download"; }
+    finally { button.disabled = !openDoc; }
+  });
+
+  async function renderPage(doc, box) {
+    if (doc !== openDoc) return;
+    const page = await doc.getPage(Number(box.dataset.page));
+    const base = page.getViewport({ scale: 1 });
+    box.style.aspectRatio = `${base.width} / ${base.height}`;
+    const scale = (box.clientWidth / base.width) * Math.min(window.devicePixelRatio || 1, 2);
+    const vp = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(vp.width);
+    canvas.height = Math.floor(vp.height);
+    box.replaceChildren(canvas);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+  }
+
+  function closeReader() {
+    if (reader.hidden) return;
+    reader.hidden = true;
+    document.body.classList.remove("reading");
+    if (observer) observer.disconnect();
+    if (openDoc) openDoc.destroy();
+    openDoc = observer = null;
+    pages.replaceChildren();
+    if (lastCard) lastCard.focus();
+  }
+
+  grid.addEventListener("click", (e) => {
+    const a = e.target.closest("a.card");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    openReader(a.getAttribute("href"), a.dataset.title, a);
+  });
+  $("reader-close").addEventListener("click", closeReader);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !reader.hidden) closeReader(); });
+
+  fromHash();
+  applyView();
+})();
+</script>
+</body>
+</html>

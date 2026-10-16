@@ -55,7 +55,7 @@ android {
     namespace "io.github.chinenglish1_source.mylibrary"
     defaultConfig {
         applicationId "io.github.chinenglish1_source.mylibrary"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 36
         versionCode 1
         versionName "1.0.0"

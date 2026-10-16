@@ -16,6 +16,10 @@ jobs:
         working-directory: android
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            android
+            .github
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

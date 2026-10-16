@@ -436,8 +436,27 @@ dialog p {line-height:1.6} dialog h2 {margin-top:0}
 dialog input {box-sizing:border-box;width:100%;margin:8px 0 20px;padding:10px;font:inherit;font-size:14px}
 dialog button {padding:10px 20px;cursor:pointer}
 </style>
+<style>
+#app-welcome {text-align:center;padding:32px 26px;max-width:380px;background:#f3ecdb;color:#173f35;border:1px solid #b99a55;box-shadow:0 24px 80px rgb(0 0 0 / .35)}
+#app-welcome img {border-radius:18px;margin-bottom:12px}
+#app-welcome h2 {font:500 30px/1.2 var(--serif);margin:0 0 14px}
+#app-welcome p {font-size:16px;margin:0 0 22px}
+#app-welcome button {display:block;width:100%;min-height:48px;font:inherit;border-radius:6px;border:1px solid #173f35;cursor:pointer}
+#app-welcome button[hidden] {display:none}
+#welcome-install {background:#173f35;color:#fff7e5;margin-bottom:12px}
+#welcome-read {background:transparent;color:#173f35}
+#welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
+</style>
 </head>
 <body>
+<dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
+  <img src="icons/icon-192.png" width="72" height="72" alt="">
+  <h2 id="welcome-title">My Library</h2>
+  <p id="welcome-description">Keep the library on your home screen, or start reading here.</p>
+  <p id="welcome-steps" role="status" hidden></p>
+  <button type="button" id="welcome-install">Install app</button>
+  <button type="button" id="welcome-read">Read on website</button>
+</dialog>
 
 <main class="wrap" id="main">
   <header class="masthead">

@@ -4,7 +4,7 @@ Public website: https://chinenglish1-source.github.io/personal-library/
 
 ## Share and install
 
-Use **Share** to open the device’s share sheet, or copy the link to paste into WeChat, WhatsApp, Telegram, email, or any chat. No sign-in is required to read.
+Send the website link through WeChat, WhatsApp, Telegram, email, or any chat. Opening the link in a browser shows Add to home screen and Read on site. Choosing either dismisses the entry chooser. Browser/OS confirmation or manual Safari steps are still required for installation. Opening the installed home-screen web app skips the chooser. No sign-in is required to read. There are no Share, Help or Install controls in the library itself.
 
 - iPhone/iPad: open the link in Safari, tap Share → Add to Home Screen → Add. Enable Open as Web App if offered.
 - Android: open in Chrome, tap ⋮ → Install app / Add to Home screen.

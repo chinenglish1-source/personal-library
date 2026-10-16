@@ -426,9 +426,7 @@ body {
 @media(max-width:480px) { .reader-bar { gap: 7px; padding-inline: 10px; } .reader-close { padding: 9px; } .reader-bar .meta-r { display: none; } }
 </style>
 <style>
-.app-tools {display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:14px auto 26px}
-.app-tools button {background:transparent;color:var(--ink);font:inherit;border:0;border-bottom:1px solid var(--line-strong);padding:8px 3px;cursor:pointer;min-height:44px}
-.app-tools button:focus-visible,dialog button:focus-visible {outline:2px solid currentColor;outline-offset:4px}
+dialog button:focus-visible {outline:2px solid currentColor;outline-offset:4px}
 .app-message {text-align:center;font-size:14px}
 dialog {color:var(--ink);background:var(--bg,#f3ecdb);border:1px solid var(--line-strong);border-radius:12px;padding:24px;max-width:480px;width:calc(100% - 40px);max-height:85dvh;overflow:auto;box-sizing:border-box}
 dialog::backdrop {background:rgb(0 0 0 / .6)}
@@ -450,12 +448,15 @@ dialog button {padding:10px 20px;cursor:pointer}
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
-  <img src="icons/icon-192.png" width="72" height="72" alt="">
   <h2 id="welcome-title">My Library</h2>
   <p id="welcome-description">Keep the library on your home screen, or start reading here.</p>
-  <p id="welcome-steps" role="status" hidden></p>
-  <button type="button" id="welcome-install">Install app</button>
-  <button type="button" id="welcome-read">Read on website</button>
+  <button type="button" id="welcome-install">Add to home screen</button>
+  <button type="button" id="welcome-read">Read on site</button>
+</dialog>
+<dialog id="install-steps" aria-labelledby="install-title">
+  <h2 id="install-title">Add to home screen</h2>
+  <p id="install-instructions"></p>
+  <button type="button" id="close-install-steps">Continue reading</button>
 </dialog>
 
 <main class="wrap" id="main">
@@ -480,24 +481,7 @@ dialog button {padding:10px 20px;cursor:pointer}
     <button type="button" data-kind="doc" aria-pressed="false"></button>
   </div>
 
-  <div class="app-tools" aria-label="Library tools">
-    <button type="button" id="share-library">Share</button>
-    <button type="button" id="install-library">Add to phone</button>
-    <button type="button" id="library-help">Help</button>
-  </div>
   <p id="app-message" class="app-message" role="status" hidden></p>
-  <dialog id="app-help" aria-labelledby="app-help-title">
-    <h2 id="app-help-title">Your library, anywhere</h2>
-    <p>Anyone with the link can read and download these public documents.</p>
-    <p><strong>iPhone / iPad:</strong> Open in Safari → Share → Add to Home Screen → Add. Turn on Open as Web App if shown.</p>
-    <p><strong>Android:</strong> Open in Chrome → menu ⋮ → Install app or Add to Home screen.</p>
-    <p><strong>Computer:</strong> Use your browser’s Install app option when available.</p>
-    <p>The catalogue works offline after your first visit. Books need internet; download a PDF to keep a personal offline copy.</p>
-    <label for="library-link">Library link</label>
-    <input id="library-link" type="url" readonly value="https://chinenglish1-source.github.io/personal-library/">
-    <p><a href="privacy.html">Privacy policy</a></p>
-    <button type="button" id="close-app-help">Close</button>
-  </dialog>
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
   <p class="sr-only" id="status" aria-live="polite"></p>

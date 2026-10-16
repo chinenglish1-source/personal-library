@@ -8,7 +8,7 @@
   $('close-app-help').addEventListener('click', () => help.close());
   $('library-link').addEventListener('click', event => event.target.select());
   $('share-library').addEventListener('click', async () => {
-    const data = { title: 'Muhammad’s Library', text: 'Books and documents to read and download.', url: publicURL };
+    const data = { title: 'My Library', text: 'Books and documents to read and download.', url: publicURL };
     try {
       if (navigator.share) { await navigator.share(data); return; }
       if (navigator.clipboard) { await navigator.clipboard.writeText(publicURL); message('Library link copied. Paste it into any chat.'); return; }

@@ -116,30 +116,67 @@
 
   const hosted = true;
   const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg"},"files/03.pdf":{"cover":"covers/03.jpg"},"files/04.pdf":{"cover":"covers/04.jpg"},"files/05.pdf":{"cover":"covers/05.jpg"},"files/06.pdf":{"cover":"covers/06.jpg"},"files/07.pdf":{"cover":"covers/07.jpg"},"files/12.pdf":{"cover":"covers/12.jpg"},"files/13.pdf":{"cover":"covers/13.jpg"},"files/14.pdf":{"cover":"covers/14.jpg"},"files/15.pdf":{"cover":"covers/15.jpg"},"files/16.pdf":{"cover":"covers/16.jpg"},"files/17.pdf":{"cover":"covers/17.jpg"},"files/18.pdf":{"cover":"covers/18.jpg"},"files/19.pdf":{"cover":"covers/19.jpg"},"files/20.pdf":{"cover":"covers/20.jpg"},"files/21.pdf":{"cover":"covers/21.jpg"},"files/22.pdf":{"cover":"covers/22.jpg"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995},"files/24.pdf":{"cover":"covers/24.jpg"},"files/25.pdf":{"cover":"covers/25.jpg"},"files/26.pdf":{"cover":"covers/26.jpg"},"files/27.pdf":{"cover":"covers/27.jpg"},"files/28.pdf":{"cover":"covers/28.jpg"},"files/29.pdf":{"cover":"covers/29.jpg"},"files/30.pdf":{"cover":"covers/30.jpg"},"files/31.pdf":{"cover":"covers/31.jpg"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223},"files/33.pdf":{"cover":"covers/33.jpg"},"files/34.pdf":{"cover":"covers/34.jpg"},"files/35.pdf":{"cover":"covers/35.jpg"},"files/36.pdf":{"cover":"covers/36.jpg"},"files/37.pdf":{"cover":"covers/37.jpg"},"files/38.pdf":{"cover":"covers/38.jpg"},"files/39.pdf":{"cover":"covers/39.jpg"},"files/40.pdf":{"cover":"covers/40.jpg"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559},"files/45.pdf":{"cover":"covers/45.jpg"},"files/46.pdf":{"cover":"covers/46.jpg"},"files/47.pdf":{"cover":"covers/47.jpg"},"files/48.pdf":{"cover":"covers/48.jpg"},"files/49.pdf":{"cover":"covers/49.jpg"},"files/50.pdf":{"cover":"covers/50.jpg"},"files/51.pdf":{"cover":"covers/51.jpg"},"files/52.pdf":{"cover":"covers/52.jpg"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641},"files/54.pdf":{"cover":"covers/54.jpg"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788},"files/56.pdf":{"cover":"covers/56.jpg"},"files/57.pdf":{"cover":"covers/57.jpg"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454},"files/59.pdf":{"cover":"covers/59.jpg"},"files/60.pdf":{"cover":"covers/60.jpg"},"files/61.pdf":{"cover":"covers/61.jpg"},"files/62.pdf":{"cover":"covers/62.jpg"},"files/63.pdf":{"cover":"covers/63.jpg"},"files/64.pdf":{"cover":"covers/64.jpg"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201},"files/67.pdf":{"cover":"covers/67.jpg"},"files/68.pdf":{"cover":"covers/68.jpg"}};
-  async function pdfOptions(url, signal, progress) {
+  async function pdfOptions(url, signal, progress, onError) {
     const options = {
       isEvalSupported: false,
+      disableAutoFetch: true,
+      disableStream: true,
+      rangeChunkSize: 65536,
       cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
       cMapPacked: true,
       standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
     };
     const file = hosted && hostedFiles[url];
     if (!file || !file.parts) return { ...options, url };
-    const data = new Uint8Array(file.size);
-    let offset = 0;
-    for (const part of file.parts) {
-      const response = await fetch(part, { signal });
-      if (!response.ok) throw new Error("File unavailable");
-      const stream = response.body.getReader();
-      while (true) {
-        const { value, done } = await stream.read();
-        if (done) break;
-        data.set(value, offset); offset += value.length;
-        if (progress) progress({ loaded: offset, total: file.size });
-      }
-    }
-    if (offset !== file.size) throw new Error("Incomplete file");
-    return { ...options, data };
+    // Published parts are 16 MiB. Map PDF.js byte ranges across their boundaries.
+    const partSize = 16 * 1024 * 1024;
+    const controller = new AbortController();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener("abort", () => controller.abort(), { once: true });
+    const range = new pdfjsLib.PDFDataRangeTransport(file.size, new Uint8Array(0));
+    const wholeParts = new Map();
+    let loaded = 0;
+    range.abort = () => controller.abort();
+    range.requestDataRange = (begin, end) => {
+      range.started = true;
+      (async () => {
+        const bytes = new Uint8Array(end - begin);
+        const requests = [];
+        for (let index = Math.floor(begin / partSize); index <= Math.floor((end - 1) / partSize); index++) {
+          requests.push((async () => {
+            const partStart = index * partSize;
+            const start = Math.max(begin - partStart, 0);
+            const stop = Math.min(end - partStart, partSize, file.size - partStart);
+            let data = wholeParts.get(index);
+            if (data) data = data.subarray(start, stop);
+            else {
+              const response = await fetch(file.parts[index], {
+                signal: controller.signal,
+                headers: { Range: `bytes=${start}-${stop - 1}` },
+              });
+              if (!response.ok) throw new Error("File unavailable");
+              data = new Uint8Array(await response.arrayBuffer());
+              if (response.status === 200) {
+                // Hosts without range support can still serve the complete part.
+                if (data.length !== Math.min(partSize, file.size - partStart)) throw new Error("Incomplete file part");
+                wholeParts.set(index, data);
+                data = data.subarray(start, stop);
+              } else if (response.status !== 206 || response.headers.get("Content-Range") !== `bytes ${start}-${stop - 1}/${Math.min(partSize, file.size - partStart)}`) {
+                throw new Error("Invalid file range");
+              }
+            }
+            if (data.length !== stop - start) throw new Error("Incomplete file range");
+            bytes.set(data, partStart + start - begin);
+          })());
+        }
+        await Promise.all(requests);
+        if (controller.signal.aborted) return;
+        loaded = Math.min(file.size, loaded + bytes.length);
+        if (progress) progress({ loaded, total: file.size });
+        range.onDataRange(begin, bytes);
+      })().catch(error => { if (onError) onError(error); });
+    };
+    return { ...options, range, length: file.size };
   }
 
   async function renderThumbnail(box) {
@@ -215,7 +252,11 @@
     $("reader-close").focus();
     if (!window.pdfjsLib) { pages.replaceChildren(el("p", { class: "reader-msg" }, "Viewer failed to load. Please reload the page.")); return; }
     try {
-      const options = await pdfOptions(href, session.controller.signal, progress);
+      const options = await pdfOptions(href, session.controller.signal, progress, () => {
+        if (current()) pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "This file couldn't be opened. Check your connection, then close and try again."));
+        if (session.task) session.task.destroy().catch(() => {});
+      });
+      session.range = options.range;
       if (!current()) return;
       session.task = pdfjsLib.getDocument(options);
       session.task.onProgress = progress;
@@ -288,7 +329,7 @@
     readerSession = null;
     if (previous) {
       previous.controller.abort();
-      if (previous.document) previous.task.destroy().catch(() => {});
+      if (previous.task && (previous.document || previous.range?.started)) previous.task.destroy().catch(() => {});
     }
     openDoc = observer = null;
   }

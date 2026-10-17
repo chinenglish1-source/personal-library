@@ -111,11 +111,12 @@
   /* Reader — files open inside the page, rendered with PDF.js. */
   const reader = $("reader"), pages = $("pages"), rTitle = $("reader-title"), rCount = $("reader-count");
   let openDoc = null, observer = null, lastCard = null, thumbObserver = null;
+  let readerSession = null;
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
 
   const hosted = true;
   const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg"},"files/03.pdf":{"cover":"covers/03.jpg"},"files/04.pdf":{"cover":"covers/04.jpg"},"files/05.pdf":{"cover":"covers/05.jpg"},"files/06.pdf":{"cover":"covers/06.jpg"},"files/07.pdf":{"cover":"covers/07.jpg"},"files/12.pdf":{"cover":"covers/12.jpg"},"files/13.pdf":{"cover":"covers/13.jpg"},"files/14.pdf":{"cover":"covers/14.jpg"},"files/15.pdf":{"cover":"covers/15.jpg"},"files/16.pdf":{"cover":"covers/16.jpg"},"files/17.pdf":{"cover":"covers/17.jpg"},"files/18.pdf":{"cover":"covers/18.jpg"},"files/19.pdf":{"cover":"covers/19.jpg"},"files/20.pdf":{"cover":"covers/20.jpg"},"files/21.pdf":{"cover":"covers/21.jpg"},"files/22.pdf":{"cover":"covers/22.jpg"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995},"files/24.pdf":{"cover":"covers/24.jpg"},"files/25.pdf":{"cover":"covers/25.jpg"},"files/26.pdf":{"cover":"covers/26.jpg"},"files/27.pdf":{"cover":"covers/27.jpg"},"files/28.pdf":{"cover":"covers/28.jpg"},"files/29.pdf":{"cover":"covers/29.jpg"},"files/30.pdf":{"cover":"covers/30.jpg"},"files/31.pdf":{"cover":"covers/31.jpg"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223},"files/33.pdf":{"cover":"covers/33.jpg"},"files/34.pdf":{"cover":"covers/34.jpg"},"files/35.pdf":{"cover":"covers/35.jpg"},"files/36.pdf":{"cover":"covers/36.jpg"},"files/37.pdf":{"cover":"covers/37.jpg"},"files/38.pdf":{"cover":"covers/38.jpg"},"files/39.pdf":{"cover":"covers/39.jpg"},"files/40.pdf":{"cover":"covers/40.jpg"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559},"files/45.pdf":{"cover":"covers/45.jpg"},"files/46.pdf":{"cover":"covers/46.jpg"},"files/47.pdf":{"cover":"covers/47.jpg"},"files/48.pdf":{"cover":"covers/48.jpg"},"files/49.pdf":{"cover":"covers/49.jpg"},"files/50.pdf":{"cover":"covers/50.jpg"},"files/51.pdf":{"cover":"covers/51.jpg"},"files/52.pdf":{"cover":"covers/52.jpg"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641},"files/54.pdf":{"cover":"covers/54.jpg"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788},"files/56.pdf":{"cover":"covers/56.jpg"},"files/57.pdf":{"cover":"covers/57.jpg"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454},"files/59.pdf":{"cover":"covers/59.jpg"},"files/60.pdf":{"cover":"covers/60.jpg"},"files/61.pdf":{"cover":"covers/61.jpg"},"files/62.pdf":{"cover":"covers/62.jpg"},"files/63.pdf":{"cover":"covers/63.jpg"},"files/64.pdf":{"cover":"covers/64.jpg"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201},"files/67.pdf":{"cover":"covers/67.jpg"},"files/68.pdf":{"cover":"covers/68.jpg"}};
-  async function pdfOptions(url) {
+  async function pdfOptions(url, signal, progress) {
     const options = {
       isEvalSupported: false,
       cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
@@ -127,10 +128,15 @@
     const data = new Uint8Array(file.size);
     let offset = 0;
     for (const part of file.parts) {
-      const response = await fetch(part);
+      const response = await fetch(part, { signal });
       if (!response.ok) throw new Error("File unavailable");
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      data.set(bytes, offset); offset += bytes.length;
+      const stream = response.body.getReader();
+      while (true) {
+        const { value, done } = await stream.read();
+        if (done) break;
+        data.set(value, offset); offset += value.length;
+        if (progress) progress({ loaded: offset, total: file.size });
+      }
     }
     if (offset !== file.size) throw new Error("Incomplete file");
     return { ...options, data };
@@ -186,23 +192,41 @@
     document.querySelectorAll(".preview").forEach((box) => thumbObserver.observe(box));
   }
 
-  async function openReader(href, title, card) {
+  async function openReader(href, title, card, addHistory = true) {
+    releaseReader();
+    const session = { controller: new AbortController(), task: null };
+    readerSession = session;
     lastCard = card;
+    if (addHistory) history.pushState({ libraryReader: true, href, title }, "");
+    const current = () => readerSession === session;
+    const progress = ({ loaded, total }) => {
+      if (!current()) return;
+      const message = pages.querySelector(".reader-msg");
+      if (message) message.textContent = total ? `Opening… ${Math.min(100, Math.round(loaded / total * 100))}%` : "Opening…";
+    };
     $("reader-download").disabled = true;
+    $("reader-download").textContent = "Download";
     rTitle.textContent = title;
     rCount.textContent = "";
-    pages.replaceChildren(el("p", { class: "reader-msg" }, "Opening…"));
+    pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "Opening…"));
     reader.hidden = false;
+    $("main").inert = true;
     document.body.classList.add("reading");
     $("reader-close").focus();
-    if (!window.pdfjsLib) { pages.replaceChildren(el("p", { class: "reader-msg" }, "Viewer failed to load.")); return; }
+    if (!window.pdfjsLib) { pages.replaceChildren(el("p", { class: "reader-msg" }, "Viewer failed to load. Please reload the page.")); return; }
     try {
-      const doc = await pdfjsLib.getDocument(await pdfOptions(href)).promise;
-      if (reader.hidden) { doc.destroy(); return; }
+      const options = await pdfOptions(href, session.controller.signal, progress);
+      if (!current()) return;
+      session.task = pdfjsLib.getDocument(options);
+      session.task.onProgress = progress;
+      const doc = await session.task.promise;
+      if (!current()) { await doc.destroy(); return; }
+      session.document = doc;
       openDoc = doc;
       $("reader-download").disabled = false;
       rCount.textContent = `${doc.numPages} ${doc.numPages === 1 ? "page" : "pages"}`;
       const first = await doc.getPage(1);
+      if (!current()) return;
       const vp = first.getViewport({ scale: 1 });
       const boxes = [];
       for (let i = 1; i <= doc.numPages; i++) {
@@ -216,8 +240,8 @@
         for (const e of entries) if (e.isIntersecting) { observer.unobserve(e.target); renderPage(doc, e.target); }
       }, { root: pages, rootMargin: "800px 0px" });
       boxes.forEach((b) => observer.observe(b));
-    } catch (err) {
-      pages.replaceChildren(el("p", { class: "reader-msg" }, "This file couldn't be opened."));
+    } catch {
+      if (current()) pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "This file couldn't be opened. Check your connection, then close and try again."));
     }
   }
 
@@ -225,42 +249,72 @@
     const doc = openDoc;
     if (!doc) return;
     const button = $("reader-download");
+    const title = rTitle.textContent;
     button.disabled = true;
     try {
       const data = await doc.getData();
       const url = URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
       const a = document.createElement("a");
-      a.href = url; a.download = (rTitle.textContent || "document") + ".pdf";
+      a.href = url; a.download = (title || "document") + ".pdf";
       document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { button.textContent = "Retry download"; }
-    finally { button.disabled = !openDoc; }
+    } catch { if (doc === openDoc) button.textContent = "Retry download"; }
+    finally { if (doc === openDoc) button.disabled = false; }
   });
 
   async function renderPage(doc, box) {
-    if (doc !== openDoc) return;
-    const page = await doc.getPage(Number(box.dataset.page));
-    const base = page.getViewport({ scale: 1 });
-    box.style.aspectRatio = `${base.width} / ${base.height}`;
-    const scale = (box.clientWidth / base.width) * Math.min(window.devicePixelRatio || 1, 2);
-    const vp = page.getViewport({ scale });
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.floor(vp.width);
-    canvas.height = Math.floor(vp.height);
-    box.replaceChildren(canvas);
-    await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    try {
+      if (doc !== openDoc) return;
+      const page = await doc.getPage(Number(box.dataset.page));
+      if (doc !== openDoc || !box.isConnected) return;
+      const base = page.getViewport({ scale: 1 });
+      box.style.aspectRatio = `${base.width} / ${base.height}`;
+      const scale = (box.clientWidth / base.width) * Math.min(window.devicePixelRatio || 1, 2);
+      const vp = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.floor(vp.width));
+      canvas.height = Math.max(1, Math.floor(vp.height));
+      box.replaceChildren(canvas);
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      box.dataset.rendered = "true";
+    } catch {
+      if (doc === openDoc && box.isConnected) box.replaceChildren(el("p", { class: "reader-msg" }, "This page couldn't be displayed. Close and reopen the book to try again."));
+    }
+  }
+
+  function releaseReader() {
+    if (observer) observer.disconnect();
+    const previous = readerSession;
+    readerSession = null;
+    if (previous) {
+      previous.controller.abort();
+      if (previous.document) previous.task.destroy().catch(() => {});
+    }
+    openDoc = observer = null;
+  }
+
+  function hideReader() {
+    reader.hidden = true;
+    $("main").inert = false;
+    document.body.classList.remove("reading");
+    releaseReader();
+    pages.replaceChildren();
+    if (lastCard && !lastCard.closest("[hidden]")) lastCard.focus();
   }
 
   function closeReader() {
     if (reader.hidden) return;
-    reader.hidden = true;
-    document.body.classList.remove("reading");
-    if (observer) observer.disconnect();
-    if (openDoc) openDoc.destroy();
-    openDoc = observer = null;
-    pages.replaceChildren();
-    if (lastCard) lastCard.focus();
+    hideReader();
+    if (history.state?.libraryReader) history.back();
   }
+
+  window.addEventListener("popstate", () => {
+    const state = history.state;
+    if (state?.libraryReader) {
+      const card = [...grid.querySelectorAll("a.card")].find(a => a.getAttribute("href") === state.href);
+      if (card) openReader(state.href, state.title, card, false);
+    } else if (!reader.hidden) hideReader();
+  });
 
   grid.addEventListener("click", (e) => {
     const a = e.target.closest("a.card");
@@ -269,8 +323,19 @@
     openReader(a.getAttribute("href"), a.dataset.title, a);
   });
   $("reader-close").addEventListener("click", closeReader);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !reader.hidden) closeReader(); });
+  document.addEventListener("keydown", (e) => {
+    if (reader.hidden) return;
+    if (e.key === "Escape") { e.preventDefault(); closeReader(); }
+    if (e.key === "Tab") {
+      const controls = [...reader.querySelectorAll("button:not(:disabled), [tabindex='0']")];
+      const first = controls[0], last = controls[controls.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 
+  // A reload starts on the shelf, so discard an old reader history marker.
+  if (history.state?.libraryReader) history.replaceState(null, "");
   fromHash();
   applyView();
 })();

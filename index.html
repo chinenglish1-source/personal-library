@@ -442,7 +442,7 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
-<link rel="stylesheet" href="study.css?v=8">
+<link rel="stylesheet" href="study.css?v=9">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -483,22 +483,14 @@ dialog button {padding:10px 20px;cursor:pointer}
   <p id="app-message" class="app-message" role="status" hidden></p>
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
-  <section id="voice-notes" aria-labelledby="voice-heading">
-    <h2 id="voice-heading">Voice notes</h2>
-    <p class="voice-help">Your ideas, saved privately on this device.</p>
-    <button id="voice-record" type="button">● Record a note</button>
-    <button id="voice-hold" type="button" aria-describedby="hold-help">Hold to record</button>
-    <span id="hold-help" class="voice-help">Hold for 1.5 seconds, or use Record.</span>
-    <p id="voice-status" role="status" aria-live="polite">Ready</p>
-    <output id="voice-timer" aria-label="Recording duration">00:00</output>
-    <div class="voice-actions">
-      <button id="voice-stop" type="button" hidden>Stop</button>
-      <button id="voice-save" type="button" hidden>Save note</button>
-      <button id="voice-cancel" type="button" hidden>Cancel</button>
-    </div>
-    <ul id="voice-list" aria-label="Saved voice notes"></ul>
-    <details><summary>Recording &amp; storage</summary><p>Keep this app open and your phone unlocked while recording. When the app is hidden, recording stops and a draft is kept when the browser allows it. Phone calls, locking, or forced closure can interrupt recording; the last unsaved audio may be lost. Review recovered drafts before saving. Notes never upload or transcribe. They stay in this browser on this device; they do not sync. Clearing site data, uninstalling, private browsing, or device storage cleanup can erase notes and progress. Use Save audio file to keep a separate backup of important notes.</p></details>
-  </section>
+  <div id="voice-dock">
+    <p id="voice-status" role="status" aria-live="polite" hidden></p>
+    <button id="voices-button" type="button" aria-label="Voices. Tap to listen; hold one second to record." aria-haspopup="dialog">Voices</button>
+  </div>
+  <dialog id="voice-notes" aria-labelledby="voice-heading">
+    <header class="voices-header"><h2 id="voice-heading">Voices</h2><button id="voices-close" type="button" aria-label="Close voices">Close</button></header>
+    <ul id="voice-list" aria-label="Saved voices"></ul>
+  </dialog>
   <p class="sr-only" id="status" aria-live="polite"></p>
 </main>
 
@@ -517,8 +509,8 @@ dialog button {padding:10px 20px;cursor:pointer}
 
 
 
-<script src="library.js?v=8" defer></script>
-<script src="voice.js?v=8" defer></script>
-<script src="app.js?v=8" defer></script>
+<script src="library.js?v=9" defer></script>
+<script src="voice.js?v=9" defer></script>
+<script src="app.js?v=9" defer></script>
 </body>
 </html>

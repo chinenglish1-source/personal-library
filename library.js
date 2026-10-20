@@ -82,7 +82,7 @@
       b.setAttribute("aria-pressed", String(b.dataset.kind === kind));
     });
     $("langs").hidden = kind === "study";
-    $("voice-notes").hidden = kind !== "study";
+
     for (const li of items) {
       const button = li.querySelector(".study-toggle");
       const active = button && selected.includes(button.dataset.href);
@@ -98,7 +98,7 @@
     const t = TEXT;
     const inView = items.filter((li) => !li.hidden);
     grid.hidden = !inView.length;
-    if (!inView.length) { empty.hidden = false; empty.textContent = status.textContent = kind === "study" ? "Choose Books or Docs, then add two or three items to Studying now." : t.empty; return; }
+    if (!inView.length) { empty.hidden = kind === "study"; empty.textContent = status.textContent = kind === "study" ? "Choose Books or Docs, then add two or three items to Studying now." : t.empty; return; }
     empty.hidden = true;
     status.textContent = String(inView.length);
   }

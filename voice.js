@@ -1,9 +1,10 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const record = $('voice-record'), hold = $('voice-hold'), stop = $('voice-stop'), save = $('voice-save'), cancel = $('voice-cancel'), status = $('voice-status');
-  let database, recorder, stream, active, chunks = [], state = 'idle', timer, started, cancelled = false, queue = Promise.resolve(), urls = [], generation = 0, storageBroken = false;
-  const message = text => { status.textContent = text; };
+  const button = $('voices-button'), panel = $('voice-notes'), status = $('voice-status');
+  let database, recorder, stream, active, chunks = [], state = 'idle', timer, started, queue = Promise.resolve(), urls = [], generation = 0;
+  let pressing = false, holdTimer, origin, longHold = false;
+  const message = text => { status.textContent = text; status.hidden = !text; };
   function db() {
     if (!database) database = new Promise((resolve, reject) => {
       const request = indexedDB.open('library.voice.v1', 1);
@@ -42,18 +43,18 @@
   }
   function controls(next) {
     state = next;
-    record.disabled = hold.disabled = next !== 'idle';
-    stop.hidden = next !== 'recording'; save.hidden = next !== 'draft';
-    cancel.hidden = next === 'idle';
-    status.dataset.recording = String(next === 'recording');
+    button.dataset.recording = String(next === 'recording');
+    button.textContent = next === 'recording' ? '● Recording 00:00' : next === 'saving' ? 'Saving…' : 'Voices';
+    button.setAttribute('aria-busy', String(next === 'saving'));
   }
   function cleanup() { clearInterval(timer); stream?.getTracks().forEach(t => t.stop()); stream = null; }
-  function storageFailure() { message('Could not save to device storage. Keep this page open and retry Save, or download the draft below.'); }
+  function storageFailure() { message('Could not save. Your draft is kept here; open Voices to retry or download it.'); }
   function formatDuration(ms) { const seconds = Math.floor(ms/1000); return `${Math.floor(seconds/60).toString().padStart(2,'0')}:${(seconds%60).toString().padStart(2,'0')}`; }
   async function render() {
     const notes = await all();
     urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
     const list = $('voice-list'); list.replaceChildren();
+    if (!notes.length) { const empty=document.createElement('li'); empty.textContent='No voices yet.'; list.append(empty); }
     for (const note of notes.sort((a,b) => b.created-a.created)) {
       if (note.id === active?.id && state !== 'idle') continue;
       const li = document.createElement('li'), title = document.createElement('h3'), time = document.createElement('time');
@@ -71,7 +72,8 @@
         } catch { message('Could not load this recording. Please try again.'); }
       };
       li.append(play);
-      function button(label, action) { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=async()=>{try{await action();}catch{storageFailure();}}; li.append(b); }
+      const options=document.createElement('details'), summary=document.createElement('summary');summary.textContent='Options';options.append(summary);li.append(options);
+      function button(label, action) { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=async()=>{try{await action();}catch{storageFailure();}}; options.append(b); }
       if(note.draft) button('Keep draft', async()=>{note.draft=false;await put(note);await render();});
       button('Rename', async()=>{const name=prompt('Name this voice note', note.name);if(name?.trim()){note.name=name.trim().slice(0,160);await put(note);await render();}});
       button('Save audio file', async()=>{const blob=await audioBlob(note);const url=URL.createObjectURL(blob);urls.push(url);const a=document.createElement('a');a.href=url;a.download=note.name+(note.mime?.includes('mp4')?'.m4a':'.webm');a.click();});
@@ -79,72 +81,92 @@
       list.append(li);
     }
   }
-  async function start() {
-    if(state !== 'idle') return;
-    if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){message('Recording is unavailable in this browser. Open the HTTPS library in Safari or Chrome.');return;}
-    const token = ++generation;
-    controls('requesting'); message('Allow microphone access to start recording.');
-    try {
-      // Request on this gesture; never request access while merely opening the library.
-      const media = await navigator.mediaDevices.getUserMedia({audio:true});
-      if(token !== generation || document.hidden) {media.getTracks().forEach(t=>t.stop());if(token===generation)controls('idle');return;}
-      stream = media;
-      await db();
-      if(token !== generation) {media.getTracks().forEach(t=>t.stop());return;}
-      const mime = ['audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported(t));
-      const instance = new MediaRecorder(media, mime ? {mimeType:mime} : undefined);
-      const note = {id:crypto.randomUUID(),name:'Voice note',created:Date.now(),mime:instance.mimeType,draft:true};
-      await put(note);
-      if(token !== generation) {await remove(note.id);media.getTracks().forEach(t=>t.stop());return;}
-      recorder=instance; active=note;
-      chunks=[]; cancelled=false; storageBroken=false; queue=Promise.resolve(); started=Date.now();
-      recorder.ondataavailable = e => {
-        if(!e.data.size || cancelled) return;
-        const index=chunks.length; chunks.push(e.data);
-        queue=queue.then(()=>transaction(['chunks'],'readwrite',tx=>tx.objectStore('chunks').put({id:note.id,index,blob:e.data}))).catch(()=>{storageBroken=true;storageFailure();if(recorder.state==='recording')recorder.stop();});
-      };
-      recorder.onstop = async()=>{
-        note.duration=Date.now()-started; cleanup(); await queue;
-        if(cancelled){try{await remove(note.id);}catch{message('Could not remove the cancelled draft; delete it below.');}active=null;controls('idle');await render().catch(storageFailure);return;}
-        controls('draft'); if(storageBroken)storageFailure();else message('Recording stopped. Save your note or cancel.');
-        const old=$('voice-draft-download');if(old)old.remove();
-        const a=document.createElement('a');a.id='voice-draft-download';a.textContent='Download draft';
-        const url=URL.createObjectURL(new Blob(chunks,{type:note.mime}));urls.push(url);a.href=url;a.download='voice-note'+(note.mime.includes('mp4')?'.m4a':'.webm');$('voice-notes').insertBefore(a,$('voice-list'));
-      };
-      recorder.onerror = () => { message('Recording was interrupted. Review the saved draft.'); if(recorder.state !== 'inactive')recorder.stop(); };
-      stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>{if(recorder.state==='recording')recorder.stop();}));
-      recorder.start(1000); controls('recording'); message('● Recording'); $('voice-timer').textContent='00:00';
-      timer=setInterval(()=>$('voice-timer').textContent=formatDuration(Date.now()-started),250);
-      navigator.storage?.persist?.().catch(()=>{});
-    } catch(e) {
-      if(token !== generation)return;
-      cleanup();controls('idle');
-      message(e.name==='NotAllowedError' ? 'Microphone permission denied. Enable it in this site’s browser settings, then tap Record again.' : 'Recording could not start. Check your microphone and device storage, then try again.');
+  async function finish() {
+    if(state === 'requesting') {
+      ++generation; cleanup(); controls('idle'); message('Hold again after allowing microphone access.');
+    } else if(state === 'recording' && recorder.state !== 'inactive') {
+      controls('saving'); recorder.stop();
     }
   }
-  record.onclick = start;
-  stop.onclick = () => { if(recorder?.state==='recording'){stop.disabled=true;recorder.stop();stop.disabled=false;} };
-  save.onclick = async()=>{
-    if(state!=='draft'||!active)return;save.disabled=true;
-    try{await queue;const blob=new Blob(chunks,{type:active.mime});if(!blob.size){message('No audio was captured. Cancel and record again.');return;}
-      const note={...active,draft:false,duration:active.duration};
-      await transaction(['notes','chunks'],'readwrite',tx=>{tx.objectStore('notes').put(note);tx.objectStore('chunks').delete(IDBKeyRange.bound([note.id,0],[note.id,Number.MAX_SAFE_INTEGER]));tx.objectStore('chunks').put({id:note.id,index:0,blob});});
-      active=null;chunks=[];$('voice-draft-download')?.remove();controls('idle');message('Saved privately on this device.');await render();
-    }catch{storageFailure();}finally{save.disabled=false;}
-  };
-  cancel.onclick = async()=>{
-    ++generation;
-    if(state==='requesting'){cleanup();controls('idle');message('Cancelled.');return;}
-    if(state==='recording'){cancelled=true;recorder.stop();return;}
-    if(state==='draft'){try{await remove(active.id);active=null;chunks=[];$('voice-draft-download')?.remove();controls('idle');message('Cancelled.');await render();}catch{storageFailure();}}
-  };
-  let holdTimer, origin;
-  const clearHold=()=>{clearTimeout(holdTimer);hold.classList.remove('holding');origin=null;};
-  hold.addEventListener('pointerdown',e=>{if(e.isPrimary===false){clearHold();return;}if(e.button!==0||state!=='idle')return;clearHold();origin={x:e.clientX,y:e.clientY};hold.setPointerCapture(e.pointerId);hold.classList.add('holding');holdTimer=setTimeout(()=>{clearHold();start();},1500);});
-  hold.addEventListener('pointermove',e=>{if(origin&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)>15)clearHold();});
-  ['pointerup','pointercancel','lostpointercapture'].forEach(event=>hold.addEventListener(event,clearHold));
-  hold.addEventListener('contextmenu',e=>e.preventDefault());
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){clearHold();if(state==='recording')recorder.stop();else if(state==='requesting'){++generation;cleanup();controls('idle');message('Recording cancelled while the app was hidden.');}}});
-  window.addEventListener('pagehide',()=>{if(state==='recording')recorder.stop();});
-  render().catch(()=>message('Voice-note storage is unavailable. Check browser privacy settings or available space.'));
+  async function start() {
+    if(state !== 'idle' || !pressing) return;
+    if(active && chunks.length){message('Tap Voices to retry saving the previous recording.');return;}
+    if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){message('Recording is unavailable in this browser. Open the library in Safari or Chrome.');return;}
+    const token=++generation;
+    controls('requesting');message('Allow microphone access, then keep holding to record.');
+    let media;
+    try {
+      media=await navigator.mediaDevices.getUserMedia({audio:true});
+      if(token !== generation || !pressing || document.hidden){media.getTracks().forEach(t=>t.stop());return;}
+      stream=media;
+      await db();
+      if(token !== generation || !pressing){media.getTracks().forEach(t=>t.stop());return;}
+      const mime=['audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+      const instance=new MediaRecorder(media,mime?{mimeType:mime}:undefined);
+      const note={id:crypto.randomUUID(),name:'Voice',created:Date.now(),mime:instance.mimeType,draft:true};
+      await put(note);
+      if(token !== generation || !pressing){await remove(note.id);media.getTracks().forEach(t=>t.stop());return;}
+      recorder=instance;active=note;chunks=[];queue=Promise.resolve();started=Date.now();
+      recorder.ondataavailable=e=>{
+        if(!e.data.size)return;
+        const index=chunks.length;chunks.push(e.data);
+        queue=queue.then(()=>transaction(['chunks'],'readwrite',tx=>tx.objectStore('chunks').put({id:note.id,index,blob:e.data}))).catch(()=>{storageFailure();finish();});
+      };
+      recorder.onstop=async()=>{
+        controls('saving');note.duration=Date.now()-started;cleanup();await queue;
+        const blob=new Blob(chunks,{type:note.mime});
+        try {
+          if(blob.size){
+            note.draft=false;
+            await transaction(['notes','chunks'],'readwrite',tx=>{tx.objectStore('notes').put(note);tx.objectStore('chunks').delete(IDBKeyRange.bound([note.id,0],[note.id,Number.MAX_SAFE_INTEGER]));tx.objectStore('chunks').put({id:note.id,index:0,blob});});
+            message('Saved');setTimeout(()=>{if(state==='idle'&&status.textContent==='Saved')message('');},1800);
+          } else {await remove(note.id);message('No audio captured. Hold again to record.');}
+          active=null;chunks=[];
+        } catch {
+          // Keep a download available even if device storage cannot accept the final audio.
+          storageFailure();
+          const a=document.createElement('a');a.textContent='Download unsaved voice';
+          const url=URL.createObjectURL(blob);a.href=url;a.download='voice'+(note.mime.includes('mp4')?'.m4a':'.webm');
+          a.onclick=()=>setTimeout(()=>URL.revokeObjectURL(url),60000);status.append(' ',a);
+        }
+        controls('idle');
+        if(panel.open)render().catch(storageFailure);
+      };
+      recorder.onerror=()=>{message('Recording interrupted. Saving the audio received.');finish();};
+      media.getAudioTracks().forEach(track=>track.addEventListener('ended',finish));
+      recorder.start(1000);controls('recording');message('');
+      timer=setInterval(()=>button.textContent='● Recording '+formatDuration(Date.now()-started),250);
+      navigator.storage?.persist?.().catch(()=>{});
+    }catch(e){
+      media?.getTracks().forEach(t=>t.stop());
+      if(token!==generation)return;
+      cleanup();controls('idle');message(e.name==='NotAllowedError'?'Microphone denied. Allow access in browser settings, then hold Voices again.':'Could not start recording. Check your microphone and storage.');
+    }
+  }
+  function release() {
+    clearTimeout(holdTimer);pressing=false;origin=null;button.classList.remove('holding');finish();
+  }
+  function begin() {
+    if(state!=='idle')return;
+    pressing=true;longHold=false;button.classList.add('holding');
+    holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1000);
+  }
+  button.addEventListener('pointerdown',e=>{
+    if(!e.isPrimary){release();longHold=true;return;}
+    if(e.button!==0||state!=='idle')return;
+    origin={x:e.clientX,y:e.clientY};button.setPointerCapture(e.pointerId);begin();
+  });
+  button.addEventListener('pointermove',e=>{if(origin&&state==='idle'&&Math.hypot(e.clientX-origin.x,e.clientY-origin.y)>18){release();longHold=true;}});
+  button.addEventListener('pointerup',release);
+  ['pointercancel','lostpointercapture'].forEach(event=>button.addEventListener(event,()=>{if(pressing){release();longHold=true;}}));
+  button.addEventListener('contextmenu',e=>e.preventDefault());
+  button.addEventListener('keydown',e=>{if(e.key===' '&&!e.repeat){e.preventDefault();begin();}});
+  button.addEventListener('keyup',e=>{if(e.key===' '){e.preventDefault();const held=longHold;release();if(!held)openList();}});
+  function openList(){if(state!=='idle')return;if(active&&chunks.length){recorder.onstop();return;}panel.showModal();render().catch(storageFailure);}
+  button.onclick=()=>{if(longHold){longHold=false;return;}openList();};
+  $('voices-close').onclick=()=>panel.close();
+  panel.addEventListener('close',()=>{panel.querySelectorAll('audio').forEach(a=>a.pause());button.focus();});
+  window.addEventListener('blur',()=>{if(pressing)release();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
+  window.addEventListener('pagehide',release);
 })();

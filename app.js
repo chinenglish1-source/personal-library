@@ -41,3 +41,5 @@
   if (!navigator.onLine) message('You’re offline. Books need internet unless you downloaded a copy.');
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
+
+if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) location.hash = "ar-study";

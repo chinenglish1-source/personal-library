@@ -1,6 +1,6 @@
-const CACHE = 'library-shell-v7';
+const CACHE = 'library-shell-v8';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['./', 'index.html', 'catalog.js', 'library.js?v=7', 'app.js?v=7', 'manifest.webmanifest', 'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'index.html', 'catalog.js', 'library.js?v=8', 'app.js?v=8', 'voice.js?v=8', 'study.css?v=8', 'manifest.webmanifest', 'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new URL(path, BASE).href))).then(() => self.skipWaiting()));
 });
@@ -17,7 +17,7 @@ self.addEventListener('fetch', event => {
   if (!isCover && !isShell) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    if (isCover) {
+    if (isCover || isShell) {
       const cached = await cache.match(request);
       if (cached) return cached;
     }

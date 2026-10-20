@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: blob: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: blob: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#173f35">
 <meta name="description" content="My Library — books and documents to read and share.">
@@ -13,11 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="Library">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Library</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Noto+Naskh+Arabic:wght@500&display=swap">
 
-<script src="catalog.js"></script>
+<script src="catalog.js" defer></script>
 
 <style>
 /* Manuscript palette: parchment, green ink, antique gold. */
@@ -445,6 +442,7 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
+<link rel="stylesheet" href="study.css?v=8">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -477,13 +475,30 @@ dialog button {padding:10px 20px;cursor:pointer}
   </div>
 
   <div class="tabs" role="group" aria-label="Section" id="tabs">
-    <button type="button" data-kind="book" aria-pressed="true"></button>
-    <button type="button" data-kind="doc" aria-pressed="false"></button>
+    <button type="button" data-kind="study" aria-pressed="true">Studying now</button>
+    <button type="button" data-kind="book" aria-pressed="false">Books</button>
+    <button type="button" data-kind="doc" aria-pressed="false">Docs</button>
   </div>
 
   <p id="app-message" class="app-message" role="status" hidden></p>
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
+  <section id="voice-notes" aria-labelledby="voice-heading">
+    <h2 id="voice-heading">Voice notes</h2>
+    <p class="voice-help">Your ideas, saved privately on this device.</p>
+    <button id="voice-record" type="button">● Record a note</button>
+    <button id="voice-hold" type="button" aria-describedby="hold-help">Hold to record</button>
+    <span id="hold-help" class="voice-help">Hold for 1.5 seconds, or use Record.</span>
+    <p id="voice-status" role="status" aria-live="polite">Ready</p>
+    <output id="voice-timer" aria-label="Recording duration">00:00</output>
+    <div class="voice-actions">
+      <button id="voice-stop" type="button" hidden>Stop</button>
+      <button id="voice-save" type="button" hidden>Save note</button>
+      <button id="voice-cancel" type="button" hidden>Cancel</button>
+    </div>
+    <ul id="voice-list" aria-label="Saved voice notes"></ul>
+    <details><summary>Recording &amp; storage</summary><p>Keep this app open and your phone unlocked while recording. When the app is hidden, recording stops and a draft is kept when the browser allows it. Phone calls, locking, or forced closure can interrupt recording; the last unsaved audio may be lost. Review recovered drafts before saving. Notes never upload or transcribe. They stay in this browser on this device; they do not sync. Clearing site data, uninstalling, private browsing, or device storage cleanup can erase notes and progress. Use Save audio file to keep a separate backup of important notes.</p></details>
+  </section>
   <p class="sr-only" id="status" aria-live="polite"></p>
 </main>
 
@@ -494,12 +509,16 @@ dialog button {padding:10px 20px;cursor:pointer}
     <button type="button" class="reader-close" id="reader-download" disabled>Download</button>
     <button type="button" class="reader-close" id="reader-close">Close</button>
   </div>
+  <div id="study-navigation" hidden>
+    <button id="study-prev" type="button">← Previous</button><span id="study-index"></span><button id="study-next" type="button">Next →</button>
+  </div>
   <div class="pages" id="pages" tabindex="0" aria-label="Document pages"></div>
 </div>
 
-<script src="vendor/pdf.min.js"></script>
 
-<script src="library.js?v=7"></script>
-<script src="app.js?v=7"></script>
+
+<script src="library.js?v=8" defer></script>
+<script src="voice.js?v=8" defer></script>
+<script src="app.js?v=8" defer></script>
 </body>
 </html>

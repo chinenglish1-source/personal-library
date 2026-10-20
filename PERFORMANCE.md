@@ -25,7 +25,7 @@ Scrolling to pages 10/20/30/40/50 previously retained 28 canvases; now retains e
 - Reuse recently opened PDF documents in memory, with eviction and safe cancellation during rapid navigation.
 - Binary search ordered page placeholders when saving progress, avoiding a linear layout scan of long books.
 - Open voice storage concurrently with microphone permission; preserve hold/release and autosave safety.
-- Correct the actual service-worker mismatch: HTML used v11 assets while its installation list still requested v10. All shell assets now use v12. Viewer code is cached when requested, rather than blocking shell installation.
+- Correct the actual service-worker mismatch: HTML used v11 assets while its installation list still requested v10. All shell assets now use v13. Viewer code is cached when requested, rather than blocking shell installation.
 - Verify Chrome and WebKit first/repeated standalone-mode launches, offline shell reopening, zero PDF requests at startup, matching cache assets, saved page 112 plus within-page offset, reload recovery, study swipes, vertical gesture protection, rapid switching and 320/375/390/430/768px layouts. No application errors in these checks.
 - Verify returning to a cached book sends no new PDF request. Existing multipart range transport and explicit download implementation are preserved.
 - Public GitHub Pages returned HTTP 200 before release; availability is separate from device startup latency.
@@ -33,3 +33,11 @@ Scrolling to pages 10/20/30/40/50 previously retained 28 canvases; now retains e
 ## Limits
 
 Physical iPhone home-screen cold/warm launches, iOS process suspension, real microphone permission/quality, interruption recovery and actual device memory pressure still require device testing. Standalone mode is simulated, not proof of installation. Synthetic touch events test handlers, not native Safari gesture arbitration. PDFs require internet unless separately downloaded; no books are automatically cached offline. Browser storage can be cleared or evicted, so voice exports remain useful backups.
+
+## Public-network follow-up
+
+The v12 release passed live Chrome and WebKit browser/standalone-mode checks, including first/repeated launches, real book rendering and returning to ongoing books. Live shell startup was 1.5–2.9 seconds cold and 26–46 ms repeated; first opening the tested 10.8 MB book was 9.9–35.7 seconds, returning 51–118 ms. These are four samples on this Mac/network, not phone guarantees.
+
+Tracing found an initial whole-file metadata probe, followed by 22 small partial responses. A known-size transport removes that initial full-file request and requests only partial bytes. Sizes are recorded for all 63 catalogue PDFs; split parts keep their existing mapping. The final v13 release uses this transport with 64 KiB ranges. Live route-intercepted trials rendered the same book in 9.9 and 10.9 seconds using 1.41 MB of partial data, with no whole-file request. This is not a controlled before/after network benchmark and does not establish a universal speedup.
+
+Larger 256 KiB chunks used 3.51 MB and took 11.4/16.5 seconds in the same transport; a 1 MiB experiment timed out. These experiments were not shipped. Initial uncached book opening remains network-dependent and can still be slow. No claim that cold iPhone loading is fixed.

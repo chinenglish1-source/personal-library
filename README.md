@@ -22,7 +22,7 @@ This directory is the publishing source. Ask Codex to edit the library here and 
 - `files/`, `covers/`: document assets and cover images.
 - `app.js`, `manifest.webmanifest`, `sw.js`, `icons/`: sharing, installation and offline catalogue.
 
-For a new PDF: add the file (split files larger than 16 MiB into exactly 16 MiB parts except the final part, using the existing naming pattern), add its cover, add a catalogue record and its hostedFiles entry. Never add private documents: every committed file is public, including Git history.
+For a new PDF: add the file (split files larger than 16 MiB into exactly 16 MiB parts except the final part, using the existing naming pattern), add its cover, add a catalogue record and its hostedFiles entry with the exact byte size (sum the parts for a split file). The reader uses that size to start partial requests directly, without a whole-file probe. Never add private documents: every committed file is public, including Git history.
 
 Preview with `python3 -m http.server 8816 --directory .`, open http://localhost:8816/, and check the shelf and reader. Commit only the intended files and push `HEAD:main` to `origin`. GitHub Pages publishes main’s root automatically. Check the live URL after the build succeeds. Increment the cache version in `sw.js` when changing the offline shell. Installed apps get web updates when reopened online; no app-store release is needed.
 

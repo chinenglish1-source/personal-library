@@ -42,12 +42,14 @@ Tracing found an initial whole-file metadata probe, followed by 22 small partial
 
 Larger 256 KiB chunks used 3.51 MB and took 11.4/16.5 seconds in the same transport; a 1 MiB experiment timed out. These experiments were not shipped. Initial uncached book opening remains network-dependent and can still be slow. No claim that cold iPhone loading is fixed.
 
-## 21 October: fewer opening requests (v16)
+## 21 October: fewer opening requests (v17)
 
 The slow 10.8 MB book needed 22 separate source-range requests before its first page. Fifty-four PDFs now have small opening packets containing verified, unchanged source bytes from their initial-render ranges. The nine remaining PDFs continue using regular ranges. Total extra hosted data is 94,975,375 bytes; none is downloaded at app startup. A packet is fetched only for the chosen book, alongside PDF-worker startup. Missing, malformed and failed packets fall back to regular range loading. Packets are capped at 12 MiB; no entire library preload or new cloud storage was added.
 
 Controlled Chrome Pixel 7 simulation, fresh contexts, HTTPS localhost, 120 ms latency and 750,000 bytes/sec: first-page times before 7,354/7,341 ms; after 4,326/4,320 ms. About 41 percent faster in this specific test, with 22 PDF source requests replaced by one opening-packet request and approximately the same 1.41 MB transferred. This is a simulated connection, not an iPhone measurement or a universal timing promise.
 
-All 54 packet bodies were checked byte-for-byte against their unchanged originals. Chrome and WebKit passed page-112 restoration after close/reload, fractional offset, cached reopening without network requests, missing/corrupt-packet fallback, rapid switching, swipes, offline shell and mobile widths. A v11-to-v16 cache upgrade retained selections, progress and a voice record. Single-file downloads (including an 18 MB PDF) and a split 22 MB PDF matched original SHA-256 hashes. The loader also corrects single-file PDFs larger than 16 MiB, which previously could be treated as if split.
+All 54 packet bodies were checked byte-for-byte against their unchanged originals. Chrome and WebKit passed page-112 restoration after close/reload, fractional offset, cached reopening without network requests, missing/corrupt-packet fallback, rapid switching, swipes, offline shell and mobile widths. A v11-to-v17 cache upgrade retained selections, progress and a voice record. Single-file downloads (including an 18 MB PDF) and a split 22 MB PDF matched original SHA-256 hashes. The loader also corrects single-file PDFs larger than 16 MiB, which previously could be treated as if split.
 
 Saved positions retain the original per-book keys and do not expire. Real iPhone startup, microphone and OS lifecycle checks remain outstanding.
+
+Shell installation now uses reload requests so fresh HTML and scripts replace stale browser-cache copies. An upgrade test with one-hour HTTP caching verified fresh HTML plus preserved page 112, study selection and voice metadata.

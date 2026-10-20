@@ -1,6 +1,6 @@
-const CACHE = 'library-shell-v11';
+const CACHE = 'library-shell-v12';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['./', 'index.html', 'catalog.js', 'library.js?v=10', 'app.js?v=10', 'voice.js?v=10', 'study.css?v=10', 'manifest.webmanifest', 'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'index.html', 'catalog.js', 'library.js?v=12', 'app.js?v=12', 'voice.js?v=12', 'study.css?v=12', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new URL(path, BASE).href))).then(() => self.skipWaiting()));
 });
@@ -13,7 +13,8 @@ self.addEventListener('fetch', event => {
   // Keep large PDFs out of automatic storage. Downloads remain a deliberate choice.
   if (url.pathname.startsWith(new URL('files/', BASE).pathname)) return;
   const isCover = url.pathname.startsWith(new URL('covers/', BASE).pathname);
-  const isShell = request.mode === 'navigate' || SHELL.some(path => new URL(path, BASE).pathname === url.pathname);
+  const isViewer = /\/vendor\/pdf(?:\.worker)?\.min\.js$/.test(url.pathname);
+  const isShell = isViewer || request.mode === 'navigate' || SHELL.some(path => new URL(path, BASE).pathname === url.pathname);
   if (!isCover && !isShell) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);

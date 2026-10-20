@@ -135,6 +135,17 @@
   const reader = $("reader"), pages = $("pages"), rTitle = $("reader-title"), rCount = $("reader-count");
   let openDoc = null, observer = null, lastCard = null, thumbObserver = null;
   let readerSession = null;
+  // Only books already opened by the user are retained. No speculative PDF fetches.
+  const recentReaders = new Map();
+  function destroySession(session) {
+    session.controller.abort();
+    if (session.task) {
+      // PDF.js 3 can reject an internal WebKit fetch if destroyed before its
+      // transport exists. Finish the small document handshake, then dispose it.
+      if (session.document || session.range?.started) Promise.resolve(session.task.destroy()).catch(() => {});
+      else session.task.promise.then(() => session.task.destroy()).catch(() => {});
+    }
+  }
   let pdfPromise;
   function loadPDF() {
     if (!pdfPromise) pdfPromise = new Promise((resolve, reject) => {
@@ -266,7 +277,11 @@
 
   async function openReader(href, title, card, addHistory = true) {
     releaseReader();
-    const session = { controller: new AbortController(), task: null, href, study: kind === "study", ready: false };
+    const cached = recentReaders.get(href);
+    recentReaders.delete(href);
+    const session = { ...(cached || {controller:new AbortController(), task:null}), href,
+      study:kind === "study", ready:false, renders:new Set(), pending:new Set(), rendering:false };
+
     readerSession = session;
     lastCard = card;
     if (addHistory) history.pushState({ libraryReader: true, href, title }, "");
@@ -274,6 +289,7 @@
     const current = () => readerSession === session;
     const progress = ({ loaded, total }) => {
       if (!current()) return;
+      if (total) session.bytes = total;
       const message = pages.querySelector(".reader-msg");
       if (message) message.textContent = total ? `Opening… ${Math.min(100, Math.round(loaded / total * 100))}%` : "Opening…";
     };
@@ -289,6 +305,7 @@
     try {
       await loadPDF();
       if (!current()) return;
+      if (!session.document) {
       const options = await pdfOptions(href, session.controller.signal, progress, () => {
         if (current()) pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "This file couldn't be opened. Check your connection, then close and try again."));
         if (session.task) session.task.destroy().catch(() => {});
@@ -300,6 +317,8 @@
       const doc = await session.task.promise;
       if (!current()) { await doc.destroy(); return; }
       session.document = doc;
+      }
+      const doc = session.document;
       openDoc = doc;
       $("reader-download").disabled = false;
       rCount.textContent = `${doc.numPages} ${doc.numPages === 1 ? "page" : "pages"}`;
@@ -326,9 +345,16 @@
       pages.scrollTop = target.offsetTop - pages.offsetTop + target.clientHeight * offset;
       session.ready = true;
       savePosition();
+      // Restore the actual reading page first, before spending time on neighbours.
+      await renderPage(doc, target, session);
+      if (!current()) return;
       observer = new IntersectionObserver((entries) => {
-        for (const e of entries) if (e.isIntersecting) { observer.unobserve(e.target); renderPage(doc, e.target); }
-      }, { root: pages, rootMargin: "800px 0px" });
+        for (const e of entries) {
+          if (e.isIntersecting && !e.target.dataset.rendered) session.pending.add(e.target);
+          else if (!e.isIntersecting) session.pending.delete(e.target);
+        }
+        drainPages(session);
+      }, { root: pages, rootMargin: "600px 0px" });
       boxes.forEach((b) => observer.observe(b));
     } catch {
       if (current()) pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "This file couldn't be opened. Check your connection, then close and try again."));
@@ -352,24 +378,50 @@
     finally { if (doc === openDoc) button.disabled = false; }
   });
 
-  async function renderPage(doc, box) {
+  async function drainPages(session) {
+    if (session.rendering) return;
+    session.rendering = true;
     try {
-      if (doc !== openDoc) return;
+      while (session === readerSession && session.pending.size) {
+        const box = [...session.pending].sort((a,b) => Math.abs(a.offsetTop-pages.scrollTop)-Math.abs(b.offsetTop-pages.scrollTop))[0];
+        session.pending.delete(box);
+        if (!box.dataset.rendered) await renderPage(session.document, box, session);
+      }
+    } finally { session.rendering = false; }
+  }
+  function prunePages() {
+    const top = pages.getBoundingClientRect().top;
+    const canvases = [...pages.querySelectorAll(".page[data-rendered] canvas")];
+    canvases.sort((a,b) => Math.abs(a.parentElement.getBoundingClientRect().top-top)-Math.abs(b.parentElement.getBoundingClientRect().top-top));
+    for (const canvas of canvases.slice(8)) {
+      delete canvas.parentElement.dataset.rendered;
+      canvas.width = canvas.height = 0;
+      canvas.remove();
+    }
+  }
+  async function renderPage(doc, box, session) {
+    let task;
+    try {
+      if (session !== readerSession) return;
       const page = await doc.getPage(Number(box.dataset.page));
-      if (doc !== openDoc || !box.isConnected) return;
-      const base = page.getViewport({ scale: 1 });
+      if (session !== readerSession || !box.isConnected) return;
+      const base = page.getViewport({scale:1});
       box.style.aspectRatio = `${base.width} / ${base.height}`;
-      const scale = (box.clientWidth / base.width) * Math.min(window.devicePixelRatio || 1, 2);
-      const vp = page.getViewport({ scale });
+      const scale = box.clientWidth / base.width * Math.min(window.devicePixelRatio || 1, 2);
+      const vp = page.getViewport({scale});
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.floor(vp.width));
       canvas.height = Math.max(1, Math.floor(vp.height));
       box.replaceChildren(canvas);
-      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      task = page.render({canvasContext:canvas.getContext("2d"), viewport:vp});
+      session.renders.add(task);
+      await task.promise;
+      if (session !== readerSession) return;
       box.dataset.rendered = "true";
-    } catch {
-      if (doc === openDoc && box.isConnected) box.replaceChildren(el("p", { class: "reader-msg" }, "This page couldn't be displayed. Close and reopen the book to try again."));
-    }
+      prunePages();
+    } catch (error) {
+      if (session === readerSession && box.isConnected && error.name !== "RenderingCancelledException") box.replaceChildren(el("p", {class:"reader-msg"}, "This page couldn't be displayed. Close and reopen the book to try again."));
+    } finally { if (task) session.renders.delete(task); }
   }
 
   function releaseReader() {
@@ -378,9 +430,20 @@
     const previous = readerSession;
     readerSession = null;
     if (previous) {
-      previous.controller.abort();
-      if (previous.task && (previous.document || previous.range?.started)) previous.task.destroy().catch(() => {});
+      previous.renders.forEach(task => task.cancel());
+      previous.pending.clear();
+      // A bounded in-memory cache accelerates returning to ongoing books. It is
+      // never persisted and never holds more than 24 MiB of known PDF data.
+      if (previous.document && previous.ready && previous.bytes > 0 && previous.bytes <= 24*1024*1024) {
+        recentReaders.set(previous.href, previous);
+        let total = [...recentReaders.values()].reduce((n,s) => n+s.bytes, 0);
+        while (recentReaders.size > 2 || total > 24*1024*1024) {
+          const [key,old] = recentReaders.entries().next().value;
+          recentReaders.delete(key); total -= old.bytes; destroySession(old);
+        }
+      } else destroySession(previous);
     }
+    pages.querySelectorAll("canvas").forEach(canvas => {canvas.width = canvas.height = 0;});
     openDoc = observer = null;
   }
 
@@ -389,7 +452,15 @@
     if (!session?.ready) return;
     const top = pages.getBoundingClientRect().top;
     const boxes = [...pages.querySelectorAll(".page")];
-    const box = boxes.find(b => b.getBoundingClientRect().bottom > top + 1) || boxes.at(-1);
+    // Page placeholders are ordered; binary search avoids measuring hundreds of
+    // pages on every progress save in long books.
+    let low = 0, high = boxes.length - 1;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (boxes[mid].getBoundingClientRect().bottom <= top + 1) low = mid + 1;
+      else high = mid;
+    }
+    const box = boxes[low];
     if (!box) return;
     positions = readStore(positionKey, positions);
     positions[session.href] = {page:Number(box.dataset.page), offset:Math.max(0, Math.min(.99, (top - box.getBoundingClientRect().top) / box.clientHeight)), updated:Date.now()};
@@ -435,12 +506,10 @@
   }, {passive:true});
 
   function hideReader() {
-    savePosition();
+    releaseReader();
     reader.hidden = true;
     $("main").inert = false;
     document.body.classList.remove("reading");
-    if (readerSession) readerSession.ready = false;
-    releaseReader();
     pages.replaceChildren();
     if (lastCard && !lastCard.closest("[hidden]")) lastCard.focus();
   }

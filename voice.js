@@ -97,10 +97,14 @@
     controls('requesting');message('Allow microphone access, then keep holding to record.');
     let media;
     try {
+      // Open storage alongside microphone permission, never after it.
+      // Catch immediately so a denied microphone cannot leave an unhandled DB rejection.
+      const storageReady = db().then(() => null, error => error);
       media=await navigator.mediaDevices.getUserMedia({audio:true});
       if(token !== generation || !pressing || document.hidden){media.getTracks().forEach(t=>t.stop());return;}
       stream=media;
-      await db();
+      const storageError = await storageReady;
+      if (storageError) throw storageError;
       if(token !== generation || !pressing){media.getTracks().forEach(t=>t.stop());return;}
       const mime=['audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported(t));
       const instance=new MediaRecorder(media,mime?{mimeType:mime}:undefined);

@@ -42,8 +42,9 @@ body.voices-open{overflow:hidden}
 #voice-list h3{font-size:15px}#voice-list time{display:block;color:#65705a;margin-bottom:8px;font-size:12px}
 #voice-notes .voices-header h2{font-size:20px}#voice-list audio{max-width:100%}
 /* Daily sections sit together: study first, voices second. */
-#voice-dock{width:min(380px,calc(100% - 28px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;direction:ltr}
+#voice-dock{width:min(310px,calc(100% - 28px));display:grid;grid-template-columns:max-content minmax(0,1fr);gap:10px;direction:ltr;align-items:center}
 #voice-status{grid-column:1/-1;justify-self:center;margin-bottom:0}
 #study-button,#voices-button{min-width:0;width:100%;min-height:52px;box-sizing:border-box;padding:12px 14px;font:600 15px/1.3 system-ui;border:1px solid #b5a47e;border-radius:30px;background:#173f35;color:#fff;box-shadow:0 4px 18px #0003;cursor:pointer}
+#study-button{width:auto;min-height:44px;padding:8px 12px;font-size:13px;white-space:nowrap}
 #study-button[aria-pressed=true]{background:#f6f0e3;color:#173f35}
 body.voices-open #study-button{background:#173f35;color:#fff}

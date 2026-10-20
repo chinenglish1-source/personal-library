@@ -146,7 +146,17 @@
       else session.task.promise.then(() => session.task.destroy()).catch(() => {});
     }
   }
-  let pdfPromise;
+  let pdfPromise, sharedReaderWorker;
+  function readerWorker() {
+    if (!sharedReaderWorker) {
+      const worker = sharedReaderWorker = new pdfjsLib.PDFWorker({name:"library-reader"});
+      worker.promise.catch(() => {
+        if (sharedReaderWorker === worker) sharedReaderWorker = null;
+        worker.destroy();
+      });
+    }
+    return sharedReaderWorker;
+  }
   function loadPDF() {
     if (!pdfPromise) pdfPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script"); script.src = "vendor/pdf.min.js";
@@ -161,8 +171,55 @@
   else setTimeout(() => loadPDF().catch(() => {}), 1000);
 
   const hosted = true;
-  const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg","size":377887},"files/03.pdf":{"cover":"covers/03.jpg","size":469897},"files/04.pdf":{"cover":"covers/04.jpg","size":1316359},"files/05.pdf":{"cover":"covers/05.jpg","size":1431062},"files/06.pdf":{"cover":"covers/06.jpg","size":407806},"files/07.pdf":{"cover":"covers/07.jpg","size":354053},"files/12.pdf":{"cover":"covers/12.jpg","size":810374},"files/13.pdf":{"cover":"covers/13.jpg","size":782603},"files/14.pdf":{"cover":"covers/14.jpg","size":577431},"files/15.pdf":{"cover":"covers/15.jpg","size":942922},"files/16.pdf":{"cover":"covers/16.jpg","size":1126868},"files/17.pdf":{"cover":"covers/17.jpg","size":653158},"files/18.pdf":{"cover":"covers/18.jpg","size":56248},"files/19.pdf":{"cover":"covers/19.jpg","size":1833583},"files/20.pdf":{"cover":"covers/20.jpg","size":1062448},"files/21.pdf":{"cover":"covers/21.jpg","size":10846008},"files/22.pdf":{"cover":"covers/22.jpg","size":5477257},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995},"files/24.pdf":{"cover":"covers/24.jpg","size":4871012},"files/25.pdf":{"cover":"covers/25.jpg","size":2089213},"files/26.pdf":{"cover":"covers/26.jpg","size":6178103},"files/27.pdf":{"cover":"covers/27.jpg","size":13332456},"files/28.pdf":{"cover":"covers/28.jpg","size":1279033},"files/29.pdf":{"cover":"covers/29.jpg","size":9442722},"files/30.pdf":{"cover":"covers/30.jpg","size":5380894},"files/31.pdf":{"cover":"covers/31.jpg","size":2314149},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223},"files/33.pdf":{"cover":"covers/33.jpg","size":5874317},"files/34.pdf":{"cover":"covers/34.jpg","size":14104839},"files/35.pdf":{"cover":"covers/35.jpg","size":7364334},"files/36.pdf":{"cover":"covers/36.jpg","size":7411365},"files/37.pdf":{"cover":"covers/37.jpg","size":9922818},"files/38.pdf":{"cover":"covers/38.jpg","size":3648478},"files/39.pdf":{"cover":"covers/39.jpg","size":8625430},"files/40.pdf":{"cover":"covers/40.jpg","size":984570},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559},"files/45.pdf":{"cover":"covers/45.jpg","size":189678},"files/46.pdf":{"cover":"covers/46.jpg","size":187971},"files/47.pdf":{"cover":"covers/47.jpg","size":6541280},"files/48.pdf":{"cover":"covers/48.jpg","size":14542766},"files/49.pdf":{"cover":"covers/49.jpg","size":12540813},"files/50.pdf":{"cover":"covers/50.jpg","size":12631626},"files/51.pdf":{"cover":"covers/51.jpg","size":8022443},"files/52.pdf":{"cover":"covers/52.jpg","size":18106982},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641},"files/54.pdf":{"cover":"covers/54.jpg","size":567766},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788},"files/56.pdf":{"cover":"covers/56.jpg","size":19429763},"files/57.pdf":{"cover":"covers/57.jpg","size":7193322},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454},"files/59.pdf":{"cover":"covers/59.jpg","size":10952490},"files/60.pdf":{"cover":"covers/60.jpg","size":541605},"files/61.pdf":{"cover":"covers/61.jpg","size":321910},"files/62.pdf":{"cover":"covers/62.jpg","size":156105},"files/63.pdf":{"cover":"covers/63.jpg","size":289563},"files/64.pdf":{"cover":"covers/64.jpg","size":7732372},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201},"files/67.pdf":{"cover":"covers/67.jpg","size":1606607},"files/68.pdf":{"cover":"covers/68.jpg","size":613824}};
-  async function pdfOptions(url, signal, progress, onError) {
+  const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg","size":377887},"files/03.pdf":{"cover":"covers/03.jpg","size":469897},"files/04.pdf":{"cover":"covers/04.jpg","size":1316359,"opening":"openings/04-4f5205dcf34d.bin"},"files/05.pdf":{"cover":"covers/05.jpg","size":1431062,"opening":"openings/05-933723bbcc95.bin"},"files/06.pdf":{"cover":"covers/06.jpg","size":407806,"opening":"openings/06-0beabdb7f1bb.bin"},"files/07.pdf":{"cover":"covers/07.jpg","size":354053,"opening":"openings/07-16853ba2e661.bin"},"files/12.pdf":{"cover":"covers/12.jpg","size":810374,"opening":"openings/12-fa961127d0c2.bin"},"files/13.pdf":{"cover":"covers/13.jpg","size":782603,"opening":"openings/13-387e4df670b6.bin"},"files/14.pdf":{"cover":"covers/14.jpg","size":577431,"opening":"openings/14-6d1b01689945.bin"},"files/15.pdf":{"cover":"covers/15.jpg","size":942922,"opening":"openings/15-b50f74a7b8d8.bin"},"files/16.pdf":{"cover":"covers/16.jpg","size":1126868,"opening":"openings/16-a29c8ba1b5b3.bin"},"files/17.pdf":{"cover":"covers/17.jpg","size":653158,"opening":"openings/17-4d60efd796c3.bin"},"files/18.pdf":{"cover":"covers/18.jpg","size":56248},"files/19.pdf":{"cover":"covers/19.jpg","size":1833583,"opening":"openings/19-c862e9f75a4a.bin"},"files/20.pdf":{"cover":"covers/20.jpg","size":1062448,"opening":"openings/20-751352b308c8.bin"},"files/21.pdf":{"cover":"covers/21.jpg","size":10846008,"opening":"openings/21-c6f4f2722e9e.bin"},"files/22.pdf":{"cover":"covers/22.jpg","size":5477257,"opening":"openings/22-51b5ffef4449.bin"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995,"opening":"openings/23-f16274f6af2a.bin"},"files/24.pdf":{"cover":"covers/24.jpg","size":4871012,"opening":"openings/24-9e685284dbca.bin"},"files/25.pdf":{"cover":"covers/25.jpg","size":2089213,"opening":"openings/25-0fc710a40341.bin"},"files/26.pdf":{"cover":"covers/26.jpg","size":6178103,"opening":"openings/26-4031e392f471.bin"},"files/27.pdf":{"cover":"covers/27.jpg","size":13332456,"opening":"openings/27-ed01cecf6a45.bin"},"files/28.pdf":{"cover":"covers/28.jpg","size":1279033,"opening":"openings/28-c92d37c8efc7.bin"},"files/29.pdf":{"cover":"covers/29.jpg","size":9442722,"opening":"openings/29-15cd37b74d8d.bin"},"files/30.pdf":{"cover":"covers/30.jpg","size":5380894,"opening":"openings/30-c38ac78e6e89.bin"},"files/31.pdf":{"cover":"covers/31.jpg","size":2314149,"opening":"openings/31-96dddc9349bc.bin"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223,"opening":"openings/32-62c6d6ac8de2.bin"},"files/33.pdf":{"cover":"covers/33.jpg","size":5874317,"opening":"openings/33-f2a9578b9591.bin"},"files/34.pdf":{"cover":"covers/34.jpg","size":14104839,"opening":"openings/34-1b337cc0a30e.bin"},"files/35.pdf":{"cover":"covers/35.jpg","size":7364334,"opening":"openings/35-1cd273806e68.bin"},"files/36.pdf":{"cover":"covers/36.jpg","size":7411365,"opening":"openings/36-e7081d88a789.bin"},"files/37.pdf":{"cover":"covers/37.jpg","size":9922818,"opening":"openings/37-d87e7f64fa70.bin"},"files/38.pdf":{"cover":"covers/38.jpg","size":3648478,"opening":"openings/38-69ed80496ed4.bin"},"files/39.pdf":{"cover":"covers/39.jpg","size":8625430,"opening":"openings/39-8120f9a1a0d9.bin"},"files/40.pdf":{"cover":"covers/40.jpg","size":984570,"opening":"openings/40-c49ba26d9b4c.bin"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661,"opening":"openings/41-65c55f22cc68.bin"},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603,"opening":"openings/42-a333a37ab1aa.bin"},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288,"opening":"openings/43-f94770844a40.bin"},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559,"opening":"openings/44-3b604f1ff1e8.bin"},"files/45.pdf":{"cover":"covers/45.jpg","size":189678},"files/46.pdf":{"cover":"covers/46.jpg","size":187971},"files/47.pdf":{"cover":"covers/47.jpg","size":6541280,"opening":"openings/47-e5a85e398142.bin"},"files/48.pdf":{"cover":"covers/48.jpg","size":14542766,"opening":"openings/48-81e24bb4b17f.bin"},"files/49.pdf":{"cover":"covers/49.jpg","size":12540813,"opening":"openings/49-d4d5e9b08876.bin"},"files/50.pdf":{"cover":"covers/50.jpg","size":12631626,"opening":"openings/50-715b9f8cf15c.bin"},"files/51.pdf":{"cover":"covers/51.jpg","size":8022443,"opening":"openings/51-a730fb781f24.bin"},"files/52.pdf":{"cover":"covers/52.jpg","size":18106982,"opening":"openings/52-801c560737fa.bin"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641,"opening":"openings/53-f348083c3b32.bin"},"files/54.pdf":{"cover":"covers/54.jpg","size":567766,"opening":"openings/54-5299478a9c82.bin"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788,"opening":"openings/55-e41758a11d6f.bin"},"files/56.pdf":{"cover":"covers/56.jpg","size":19429763,"opening":"openings/56-c6155a8ec079.bin"},"files/57.pdf":{"cover":"covers/57.jpg","size":7193322,"opening":"openings/57-d018eaebe2e6.bin"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454,"opening":"openings/58-addd540d64ab.bin"},"files/59.pdf":{"cover":"covers/59.jpg","size":10952490,"opening":"openings/59-3e278876ddb0.bin"},"files/60.pdf":{"cover":"covers/60.jpg","size":541605},"files/61.pdf":{"cover":"covers/61.jpg","size":321910},"files/62.pdf":{"cover":"covers/62.jpg","size":156105},"files/63.pdf":{"cover":"covers/63.jpg","size":289563,"opening":"openings/63-5ef0a16fa429.bin"},"files/64.pdf":{"cover":"covers/64.jpg","size":7732372,"opening":"openings/64-b3cb2179ab9a.bin"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989,"opening":"openings/65-369de3f98d7b.bin"},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201,"opening":"openings/66-a9bf6b99b6fc.bin"},"files/67.pdf":{"cover":"covers/67.jpg","size":1606607,"opening":"openings/67-b6ed0d47225b.bin"},"files/68.pdf":{"cover":"covers/68.jpg","size":613824}};
+  async function loadOpening(href, signal) {
+    const file = hostedFiles[href];
+    if (!file?.opening || signal?.aborted) return null;
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, {once:true});
+    const timer = setTimeout(abort, 15000);
+    try {
+      const response = await fetch(file.opening, {signal:controller.signal});
+      if (!response.ok) return null;
+      clearTimeout(timer);
+      const data = new Uint8Array(await response.arrayBuffer());
+      if (data.length < 4 || data.length > 12*1024*1024+65536) return null;
+      const length = new DataView(data.buffer).getUint32(0, true);
+      if (length > 65536 || length+4 > data.length) return null;
+      const header = JSON.parse(new TextDecoder().decode(data.subarray(4,4+length)));
+      if (header.v !== 1 || header.size !== file.size || !Array.isArray(header.blocks)) return null;
+      let offset = 4+length, last = 0;
+      const blocks = [];
+      for (const pair of header.blocks) {
+        const [start,end] = pair;
+        if (!Number.isInteger(start) || !Number.isInteger(end) || start<last || end<=start || end>file.size || offset+end-start>data.length) return null;
+        blocks.push({start,end,data:data.subarray(offset,offset+end-start)});
+        offset += end-start; last=end;
+      }
+      if (offset !== data.length) return null;
+      return (begin,end) => {
+        let cursor=begin;
+        const pieces=[];
+        for (const block of blocks) {
+          if (block.end<=cursor) continue;
+          if (block.start>cursor) return null;
+          const stop=Math.min(end,block.end);
+          pieces.push(block.data.subarray(cursor-block.start,stop-block.start));
+          cursor=stop;
+          if (cursor===end) {
+            if(pieces.length===1)return pieces[0];
+            const joined=new Uint8Array(end-begin);let at=0;
+            for(const piece of pieces){joined.set(piece,at);at+=piece.length;}
+            return joined;
+          }
+        }
+        return null;
+      };
+    } catch { return null; }
+    finally {clearTimeout(timer);signal?.removeEventListener("abort",abort);}
+  }
+  async function pdfOptions(url, signal, progress, onError, openingPromise) {
     const options = {
       isEvalSupported: false,
       disableAutoFetch: true,
@@ -176,17 +233,20 @@
     if (!file || !file.size) return { ...options, url };
     // Known sizes avoid an initial whole-file probe. Map ranges across 16 MiB
     // parts, or directly into a single PDF; never preload unopened books.
-    const partSize = 16 * 1024 * 1024;
+    const partSize = file.parts ? 16 * 1024 * 1024 : file.size;
     const controller = new AbortController();
     if (signal?.aborted) controller.abort();
     else signal?.addEventListener("abort", () => controller.abort(), { once: true });
     const range = new pdfjsLib.PDFDataRangeTransport(file.size, new Uint8Array(0));
     const wholeParts = new Map();
+    const opening = await (openingPromise || loadOpening(url, signal));
     let loaded = 0;
     range.abort = () => controller.abort();
     range.requestDataRange = (begin, end) => {
       range.started = true;
       (async () => {
+        const warmed = opening?.(begin,end);
+        if (warmed) { await Promise.resolve(); if(!controller.signal.aborted)range.onDataRange(begin,warmed); return; }
         const bytes = new Uint8Array(end - begin);
         const requests = [];
         for (let index = Math.floor(begin / partSize); index <= Math.floor((end - 1) / partSize); index++) {
@@ -304,14 +364,19 @@
     document.body.classList.add("reading");
     $("reader-close").focus();
     try {
+      const openingPromise = session.document ? null : loadOpening(href, session.controller.signal);
       await loadPDF();
       if (!current()) return;
       if (!session.document) {
+      // Warm one shared worker alongside the opening packet, rather than after it.
+      const worker = readerWorker();
       const options = await pdfOptions(href, session.controller.signal, progress, () => {
         if (current()) pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "This file couldn't be opened. Check your connection, then close and try again."));
         if (session.task) session.task.destroy().catch(() => {});
-      });
+      }, openingPromise);
+      options.worker = worker;
       session.range = options.range;
+      session.bytes = options.length || hostedFiles[href]?.size || 0;
       if (!current()) return;
       session.task = pdfjsLib.getDocument(options);
       session.task.onProgress = progress;

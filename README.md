@@ -45,3 +45,9 @@ Study selections and positions use new namespaced localStorage keys (`library.st
 Keep the phone unlocked and this app visible while recording. Hiding the app requests a stop; operating-system suspension or forced closure can prevent final audio delivery. A recovered draft can be incomplete. Browser storage is local to the browser/profile/device, may be evicted, and is erased by clearing site data. Persistent-storage permission is requested when recording, but browsers may refuse it. There is no cloud sync, transcription or automatic sharing. PDFs still require internet unless separately downloaded.
 
 The app shows its interface before loading PDF.js. Covers are lazy-loaded; no PDF is preloaded. The service worker caches the versioned application shell and covers, not books or audio. Increase the shell and script versions on future updates; never clear study or voice-note storage during an update.
+
+## Opening packets
+
+Fifty-four PDFs have content-addressed `openings/*.bin` files containing the original byte ranges used during initial page rendering. They are requested only after a book is opened, never at app startup. Other pages still use byte ranges from unchanged originals. Invalid or missing packets fall back to ordinary ranges. One PDF worker starts alongside the packet and is shared across reader sessions.
+
+When replacing an existing PDF, remove its `opening` property until a packet has been regenerated and checked against the new original. Never reuse an old packet for changed contents, even if its byte size matches. Original PDF and split-part files remain the download source.

@@ -171,7 +171,7 @@
   else setTimeout(() => loadPDF().catch(() => {}), 1000);
 
   const hosted = true;
-  const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg","size":377887},"files/03.pdf":{"cover":"covers/03.jpg","size":469897},"files/04.pdf":{"cover":"covers/04.jpg","size":1316359,"opening":"openings/04-4f5205dcf34d.bin"},"files/05.pdf":{"cover":"covers/05.jpg","size":1431062,"opening":"openings/05-933723bbcc95.bin"},"files/06.pdf":{"cover":"covers/06.jpg","size":407806,"opening":"openings/06-0beabdb7f1bb.bin"},"files/07.pdf":{"cover":"covers/07.jpg","size":354053,"opening":"openings/07-16853ba2e661.bin"},"files/12.pdf":{"cover":"covers/12.jpg","size":810374,"opening":"openings/12-fa961127d0c2.bin"},"files/13.pdf":{"cover":"covers/13.jpg","size":782603,"opening":"openings/13-387e4df670b6.bin"},"files/14.pdf":{"cover":"covers/14.jpg","size":577431,"opening":"openings/14-6d1b01689945.bin"},"files/15.pdf":{"cover":"covers/15.jpg","size":942922,"opening":"openings/15-b50f74a7b8d8.bin"},"files/16.pdf":{"cover":"covers/16.jpg","size":1126868,"opening":"openings/16-a29c8ba1b5b3.bin"},"files/17.pdf":{"cover":"covers/17.jpg","size":653158,"opening":"openings/17-4d60efd796c3.bin"},"files/18.pdf":{"cover":"covers/18.jpg","size":56248},"files/19.pdf":{"cover":"covers/19.jpg","size":1833583,"opening":"openings/19-c862e9f75a4a.bin"},"files/20.pdf":{"cover":"covers/20.jpg","size":1062448,"opening":"openings/20-751352b308c8.bin"},"files/21.pdf":{"cover":"covers/21.jpg","size":10846008,"opening":"openings/21-c6f4f2722e9e.bin"},"files/22.pdf":{"cover":"covers/22.jpg","size":5477257,"opening":"openings/22-51b5ffef4449.bin"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995,"opening":"openings/23-f16274f6af2a.bin"},"files/24.pdf":{"cover":"covers/24.jpg","size":4871012,"opening":"openings/24-9e685284dbca.bin"},"files/25.pdf":{"cover":"covers/25.jpg","size":2089213,"opening":"openings/25-0fc710a40341.bin"},"files/26.pdf":{"cover":"covers/26.jpg","size":6178103,"opening":"openings/26-4031e392f471.bin"},"files/27.pdf":{"cover":"covers/27.jpg","size":13332456,"opening":"openings/27-ed01cecf6a45.bin"},"files/28.pdf":{"cover":"covers/28.jpg","size":1279033,"opening":"openings/28-c92d37c8efc7.bin"},"files/29.pdf":{"cover":"covers/29.jpg","size":9442722,"opening":"openings/29-15cd37b74d8d.bin"},"files/30.pdf":{"cover":"covers/30.jpg","size":5380894,"opening":"openings/30-c38ac78e6e89.bin"},"files/31.pdf":{"cover":"covers/31.jpg","size":2314149,"opening":"openings/31-96dddc9349bc.bin"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223,"opening":"openings/32-62c6d6ac8de2.bin"},"files/33.pdf":{"cover":"covers/33.jpg","size":5874317,"opening":"openings/33-f2a9578b9591.bin"},"files/34.pdf":{"cover":"covers/34.jpg","size":14104839,"opening":"openings/34-1b337cc0a30e.bin"},"files/35.pdf":{"cover":"covers/35.jpg","size":7364334,"opening":"openings/35-1cd273806e68.bin"},"files/36.pdf":{"cover":"covers/36.jpg","size":7411365,"opening":"openings/36-e7081d88a789.bin"},"files/37.pdf":{"cover":"covers/37.jpg","size":9922818,"opening":"openings/37-d87e7f64fa70.bin"},"files/38.pdf":{"cover":"covers/38.jpg","size":3648478,"opening":"openings/38-69ed80496ed4.bin"},"files/39.pdf":{"cover":"covers/39.jpg","size":8625430,"opening":"openings/39-8120f9a1a0d9.bin"},"files/40.pdf":{"cover":"covers/40.jpg","size":984570,"opening":"openings/40-c49ba26d9b4c.bin"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661,"opening":"openings/41-65c55f22cc68.bin"},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603,"opening":"openings/42-a333a37ab1aa.bin"},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288,"opening":"openings/43-f94770844a40.bin"},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559,"opening":"openings/44-3b604f1ff1e8.bin"},"files/45.pdf":{"cover":"covers/45.jpg","size":189678},"files/46.pdf":{"cover":"covers/46.jpg","size":187971},"files/47.pdf":{"cover":"covers/47.jpg","size":6541280,"opening":"openings/47-e5a85e398142.bin"},"files/48.pdf":{"cover":"covers/48.jpg","size":14542766,"opening":"openings/48-81e24bb4b17f.bin"},"files/49.pdf":{"cover":"covers/49.jpg","size":12540813,"opening":"openings/49-d4d5e9b08876.bin"},"files/50.pdf":{"cover":"covers/50.jpg","size":12631626,"opening":"openings/50-715b9f8cf15c.bin"},"files/51.pdf":{"cover":"covers/51.jpg","size":8022443,"opening":"openings/51-a730fb781f24.bin"},"files/52.pdf":{"cover":"covers/52.jpg","size":18106982,"opening":"openings/52-801c560737fa.bin"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641,"opening":"openings/53-f348083c3b32.bin"},"files/54.pdf":{"cover":"covers/54.jpg","size":567766,"opening":"openings/54-5299478a9c82.bin"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788,"opening":"openings/55-e41758a11d6f.bin"},"files/56.pdf":{"cover":"covers/56.jpg","size":19429763,"opening":"openings/56-c6155a8ec079.bin"},"files/57.pdf":{"cover":"covers/57.jpg","size":7193322,"opening":"openings/57-d018eaebe2e6.bin"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454,"opening":"openings/58-addd540d64ab.bin"},"files/59.pdf":{"cover":"covers/59.jpg","size":10952490,"opening":"openings/59-3e278876ddb0.bin"},"files/60.pdf":{"cover":"covers/60.jpg","size":541605},"files/61.pdf":{"cover":"covers/61.jpg","size":321910},"files/62.pdf":{"cover":"covers/62.jpg","size":156105},"files/63.pdf":{"cover":"covers/63.jpg","size":289563,"opening":"openings/63-5ef0a16fa429.bin"},"files/64.pdf":{"cover":"covers/64.jpg","size":7732372,"opening":"openings/64-b3cb2179ab9a.bin"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989,"opening":"openings/65-369de3f98d7b.bin"},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201,"opening":"openings/66-a9bf6b99b6fc.bin"},"files/67.pdf":{"cover":"covers/67.jpg","size":1606607,"opening":"openings/67-b6ed0d47225b.bin"},"files/68.pdf":{"cover":"covers/68.jpg","size":613824}};
+  const hostedFiles = {"files/02.pdf":{"cover":"covers/02.jpg","size":377887,"opening":"openings/02-b10960d03b27.bin"},"files/03.pdf":{"cover":"covers/03.jpg","size":469897,"opening":"openings/03-3564aa92d3fb.bin"},"files/04.pdf":{"cover":"covers/04.jpg","size":1316359,"opening":"openings/04-ca8f8225d785.bin"},"files/05.pdf":{"cover":"covers/05.jpg","size":1431062,"opening":"openings/05-8494fa44cab6.bin"},"files/06.pdf":{"cover":"covers/06.jpg","size":407806,"opening":"openings/06-7df911992f0f.bin"},"files/07.pdf":{"cover":"covers/07.jpg","size":354053,"opening":"openings/07-d7153f92dc83.bin"},"files/12.pdf":{"cover":"covers/12.jpg","size":810374,"opening":"openings/12-6e91a57a3101.bin"},"files/13.pdf":{"cover":"covers/13.jpg","size":782603,"opening":"openings/13-b5dba6b67e66.bin"},"files/14.pdf":{"cover":"covers/14.jpg","size":577431,"opening":"openings/14-d6cad8acace2.bin"},"files/15.pdf":{"cover":"covers/15.jpg","size":942922,"opening":"openings/15-f3a68c036940.bin"},"files/16.pdf":{"cover":"covers/16.jpg","size":1126868,"opening":"openings/16-f0a45f20917a.bin"},"files/17.pdf":{"cover":"covers/17.jpg","size":653158,"opening":"openings/17-ccb14b4936f4.bin"},"files/18.pdf":{"cover":"covers/18.jpg","size":56248,"opening":"openings/18-630d59d84444.bin"},"files/19.pdf":{"cover":"covers/19.jpg","size":1833583,"opening":"openings/19-03a31f3725b2.bin"},"files/20.pdf":{"cover":"covers/20.jpg","size":1062448,"opening":"openings/20-f653ae82dce0.bin"},"files/21.pdf":{"cover":"covers/21.jpg","size":10846008,"opening":"openings/21-b4c3f7f96251.bin"},"files/22.pdf":{"cover":"covers/22.jpg","size":5477257,"opening":"openings/22-6953ca03932e.bin"},"files/23.pdf":{"cover":"covers/23.jpg","parts":["files/23.part00","files/23.part01","files/23.part02"],"size":34244995,"opening":"openings/23-eb50f18c467d.bin"},"files/24.pdf":{"cover":"covers/24.jpg","size":4871012,"opening":"openings/24-e52f779e1d14.bin"},"files/25.pdf":{"cover":"covers/25.jpg","size":2089213,"opening":"openings/25-c42a5fdd7115.bin"},"files/26.pdf":{"cover":"covers/26.jpg","size":6178103,"opening":"openings/26-0f9e7be5a21f.bin"},"files/27.pdf":{"cover":"covers/27.jpg","size":13332456,"opening":"openings/27-e8008e013e6a.bin"},"files/28.pdf":{"cover":"covers/28.jpg","size":1279033,"opening":"openings/28-f8417dbf1111.bin"},"files/29.pdf":{"cover":"covers/29.jpg","size":9442722,"opening":"openings/29-ece4665bd596.bin"},"files/30.pdf":{"cover":"covers/30.jpg","size":5380894,"opening":"openings/30-e0796041758a.bin"},"files/31.pdf":{"cover":"covers/31.jpg","size":2314149,"opening":"openings/31-6ceb8b3364f6.bin"},"files/32.pdf":{"cover":"covers/32.jpg","parts":["files/32.part00","files/32.part01"],"size":26922223,"opening":"openings/32-09c32db5fa35.bin"},"files/33.pdf":{"cover":"covers/33.jpg","size":5874317,"opening":"openings/33-34f0c22d10c8.bin"},"files/34.pdf":{"cover":"covers/34.jpg","size":14104839,"opening":"openings/34-39c405917a6e.bin"},"files/35.pdf":{"cover":"covers/35.jpg","size":7364334,"opening":"openings/35-ce21da583795.bin"},"files/36.pdf":{"cover":"covers/36.jpg","size":7411365,"opening":"openings/36-bda966d33000.bin"},"files/37.pdf":{"cover":"covers/37.jpg","size":9922818,"opening":"openings/37-9bc8ec1ec0a9.bin"},"files/38.pdf":{"cover":"covers/38.jpg","size":3648478,"opening":"openings/38-d3c5ac29dadb.bin"},"files/39.pdf":{"cover":"covers/39.jpg","size":8625430,"opening":"openings/39-71b58debc2da.bin"},"files/40.pdf":{"cover":"covers/40.jpg","size":984570,"opening":"openings/40-e65df08d8655.bin"},"files/41.pdf":{"cover":"covers/41.jpg","parts":["files/41.part00","files/41.part01"],"size":24559661,"opening":"openings/41-8e5695564d06.bin"},"files/42.pdf":{"cover":"covers/42.jpg","parts":["files/42.part00","files/42.part01"],"size":25666603,"opening":"openings/42-98f16507dd9a.bin"},"files/43.pdf":{"cover":"covers/43.jpg","parts":["files/43.part00","files/43.part01","files/43.part02","files/43.part03"],"size":58653288,"opening":"openings/43-426b9094f13b.bin"},"files/44.pdf":{"cover":"covers/44.jpg","parts":["files/44.part00","files/44.part01"],"size":32435559,"opening":"openings/44-c0fea66ea65f.bin"},"files/45.pdf":{"cover":"covers/45.jpg","size":189678,"opening":"openings/45-5602aec2ca1a.bin"},"files/46.pdf":{"cover":"covers/46.jpg","size":187971,"opening":"openings/46-82937143db90.bin"},"files/47.pdf":{"cover":"covers/47.jpg","size":6541280,"opening":"openings/47-8b04069331ea.bin"},"files/48.pdf":{"cover":"covers/48.jpg","size":14542766,"opening":"openings/48-28cb66f6a451.bin"},"files/49.pdf":{"cover":"covers/49.jpg","size":12540813,"opening":"openings/49-05b12be25c93.bin"},"files/50.pdf":{"cover":"covers/50.jpg","size":12631626,"opening":"openings/50-e414d3716019.bin"},"files/51.pdf":{"cover":"covers/51.jpg","size":8022443,"opening":"openings/51-9fe71ae9367d.bin"},"files/52.pdf":{"cover":"covers/52.jpg","size":18106982,"opening":"openings/52-601a6e25a927.bin"},"files/53.pdf":{"cover":"covers/53.jpg","parts":["files/53.part00","files/53.part01"],"size":21887641,"opening":"openings/53-09f506987afd.bin"},"files/54.pdf":{"cover":"covers/54.jpg","size":567766,"opening":"openings/54-c45d88f9e693.bin"},"files/55.pdf":{"cover":"covers/55.jpg","parts":["files/55.part00","files/55.part01"],"size":25476788,"opening":"openings/55-c5bc63ae236d.bin"},"files/56.pdf":{"cover":"covers/56.jpg","size":19429763,"opening":"openings/56-5d59b732e173.bin"},"files/57.pdf":{"cover":"covers/57.jpg","size":7193322,"opening":"openings/57-b3e49bced315.bin"},"files/58.pdf":{"cover":"covers/58.jpg","parts":["files/58.part00","files/58.part01","files/58.part02"],"size":47579454,"opening":"openings/58-cbb58909879d.bin"},"files/59.pdf":{"cover":"covers/59.jpg","size":10952490,"opening":"openings/59-7212d28c43e2.bin"},"files/60.pdf":{"cover":"covers/60.jpg","size":541605,"opening":"openings/60-2e66bd95c665.bin"},"files/61.pdf":{"cover":"covers/61.jpg","size":321910,"opening":"openings/61-a7f66ab5d4fc.bin"},"files/62.pdf":{"cover":"covers/62.jpg","size":156105},"files/63.pdf":{"cover":"covers/63.jpg","size":289563,"opening":"openings/63-20d7d99d1a73.bin"},"files/64.pdf":{"cover":"covers/64.jpg","size":7732372,"opening":"openings/64-4e05a0dfbf3c.bin"},"files/65.pdf":{"cover":"covers/65.jpg","parts":["files/65.part00","files/65.part01"],"size":28715989,"opening":"openings/65-098d20328bdb.bin"},"files/66.pdf":{"cover":"covers/66.jpg","parts":["files/66.part00","files/66.part01"],"size":22573201,"opening":"openings/66-f678309a11e2.bin"},"files/67.pdf":{"cover":"covers/67.jpg","size":1606607,"opening":"openings/67-1d31be878ccf.bin"},"files/68.pdf":{"cover":"covers/68.jpg","size":613824}};
   async function loadOpening(href, signal) {
     const file = hostedFiles[href];
     if (!file?.opening || signal?.aborted) return null;
@@ -180,7 +180,7 @@
     signal?.addEventListener("abort", abort, {once:true});
     const timer = setTimeout(abort, 15000);
     try {
-      const response = await fetch(file.opening, {signal:controller.signal});
+      const response = await fetch(file.opening, {signal:controller.signal, priority:"high"});
       if (!response.ok) return null;
       clearTimeout(timer);
       const data = new Uint8Array(await response.arrayBuffer());
@@ -240,6 +240,36 @@
     const range = new pdfjsLib.PDFDataRangeTransport(file.size, new Uint8Array(0));
     const wholeParts = new Map();
     const opening = await (openingPromise || loadOpening(url, signal));
+    options.rangeChunkSize = opening ? 4096 : 65536;
+    // Precise opening slices reduce download size. Later pages still fetch
+    // deduplicated 64 KiB network blocks, bounded to 4 MiB per retained reader.
+    const blocks = new Map(), pendingBlocks = new Map();
+    async function readRange(begin,end) {
+      const bytes = new Uint8Array(end-begin);
+      await Promise.all(Array.from({length:Math.floor((end-1)/partSize)-Math.floor(begin/partSize)+1},(_,i)=>i+Math.floor(begin/partSize)).map(async index=>{
+        const partStart=index*partSize, start=Math.max(begin-partStart,0), stop=Math.min(end-partStart,partSize,file.size-partStart);
+        let data=wholeParts.get(index);
+        if(data)data=data.subarray(start,stop);
+        else {
+          const response=await fetch((file.parts||[url])[index],{signal:controller.signal,priority:"high",headers:{Range:`bytes=${start}-${stop-1}`}});
+          if(!response.ok)throw Error("File unavailable");
+          data=new Uint8Array(await response.arrayBuffer());
+          if(response.status===200){
+            if(data.length!==Math.min(partSize,file.size-partStart))throw Error("Incomplete file part");
+            wholeParts.set(index,data);data=data.subarray(start,stop);
+          }else if(response.status!==206||response.headers.get("Content-Range")!==`bytes ${start}-${stop-1}/${Math.min(partSize,file.size-partStart)}`)throw Error("Invalid file range");
+        }
+        if(data.length!==stop-start)throw Error("Incomplete file range");
+        bytes.set(data,partStart+start-begin);
+      }));
+      return bytes;
+    }
+    async function readBlock(begin) {
+      if(blocks.has(begin)){const data=blocks.get(begin);blocks.delete(begin);blocks.set(begin,data);return data;}
+      if(pendingBlocks.has(begin))return pendingBlocks.get(begin);
+      const task=readRange(begin,Math.min(file.size,begin+65536)).then(data=>{blocks.set(begin,data);while(blocks.size>64)blocks.delete(blocks.keys().next().value);return data;}).finally(()=>pendingBlocks.delete(begin));
+      pendingBlocks.set(begin,task);return task;
+    }
     let loaded = 0;
     range.abort = () => controller.abort();
     range.requestDataRange = (begin, end) => {
@@ -247,36 +277,16 @@
       (async () => {
         const warmed = opening?.(begin,end);
         if (warmed) { await Promise.resolve(); if(!controller.signal.aborted)range.onDataRange(begin,warmed); return; }
-        const bytes = new Uint8Array(end - begin);
-        const requests = [];
-        for (let index = Math.floor(begin / partSize); index <= Math.floor((end - 1) / partSize); index++) {
-          requests.push((async () => {
-            const partStart = index * partSize;
-            const start = Math.max(begin - partStart, 0);
-            const stop = Math.min(end - partStart, partSize, file.size - partStart);
-            let data = wholeParts.get(index);
-            if (data) data = data.subarray(start, stop);
-            else {
-              const response = await fetch((file.parts || [url])[index], {
-                signal: controller.signal,
-                headers: { Range: `bytes=${start}-${stop - 1}` },
-              });
-              if (!response.ok) throw new Error("File unavailable");
-              data = new Uint8Array(await response.arrayBuffer());
-              if (response.status === 200) {
-                // Hosts without range support can still serve the complete part.
-                if (data.length !== Math.min(partSize, file.size - partStart)) throw new Error("Incomplete file part");
-                wholeParts.set(index, data);
-                data = data.subarray(start, stop);
-              } else if (response.status !== 206 || response.headers.get("Content-Range") !== `bytes ${start}-${stop - 1}/${Math.min(partSize, file.size - partStart)}`) {
-                throw new Error("Invalid file range");
-              }
-            }
-            if (data.length !== stop - start) throw new Error("Incomplete file range");
-            bytes.set(data, partStart + start - begin);
-          })());
+        let bytes;
+        if (!opening) bytes=await readRange(begin,end);
+        else {
+          bytes=new Uint8Array(end-begin);
+          const requests=[];
+          for(let block=Math.floor(begin/65536)*65536;block<end;block+=65536){
+            requests.push((async()=>{const data=await readBlock(block),start=Math.max(begin,block),stop=Math.min(end,block+data.length);bytes.set(data.subarray(start-block,stop-block),start-begin);})());
+          }
+          await Promise.all(requests);
         }
-        await Promise.all(requests);
         if (controller.signal.aborted) return;
         loaded = Math.min(file.size, loaded + bytes.length);
         if (progress) progress({ loaded, total: file.size });
@@ -294,6 +304,7 @@
       if (hosted && hostedFiles[box.dataset.src]) {
         const cover = new Image();
         cover.alt = "";
+        cover.fetchPriority = "low";
         cover.src = hostedFiles[box.dataset.src].cover;
         await cover.decode();
         const scale = Math.min(box.clientWidth / cover.naturalWidth, box.clientHeight / cover.naturalHeight);

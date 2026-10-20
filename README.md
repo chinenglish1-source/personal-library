@@ -48,6 +48,6 @@ The app shows its interface before loading PDF.js. Covers are lazy-loaded; no PD
 
 ## Opening packets
 
-Fifty-four PDFs have content-addressed `openings/*.bin` files containing the original byte ranges used during initial page rendering. They are requested only after a book is opened, never at app startup. Other pages still use byte ranges from unchanged originals. Invalid or missing packets fall back to ordinary ranges. One PDF worker starts alongside the packet and is shared across reader sessions.
+Sixty-one PDFs have content-addressed `openings/*.bin` files containing the original byte ranges used during initial page rendering. They are requested only after a book is opened, never at app startup. Other pages still use byte ranges from unchanged originals. Invalid or missing packets fall back to ordinary ranges. One PDF worker starts alongside the packet and is shared across reader sessions. Packets use precise 4 KiB slices; later pages use a deduplicated, bounded 64 KiB network-block cache to avoid tiny sequential downloads.
 
 When replacing an existing PDF, remove its `opening` property until a packet has been regenerated and checked against the new original. Never reuse an old packet for changed contents, even if its byte size matches. Original PDF and split-part files remain the download source.

@@ -53,3 +53,11 @@ All 54 packet bodies were checked byte-for-byte against their unchanged original
 Saved positions retain the original per-book keys and do not expire. Real iPhone startup, microphone and OS lifecycle checks remain outstanding.
 
 Shell installation now uses reload requests so fresh HTML and scripts replace stale browser-cache copies. An upgrade test with one-hour HTTP caching verified fresh HTML plus preserved page 112, study selection and voice metadata.
+
+## 21 October: precise opening slices (v18)
+
+A live test exposed very low throughput on this connection: a 1.4 MB packet did not finish within 40 seconds. The next iteration reduces the bytes required, rather than relying only on fewer requests. Sixty-one opening packets now use precise 4 KiB PDF slices. For the tested 10.8 MB book the packet shrank from 1,409,091 to 147,793 bytes. Later pages fetch deduplicated 64 KiB network blocks, capped at 4 MiB per retained reader; missing packets use the original 64 KiB transport. Originals and saved-position keys are unchanged.
+
+Same controlled Chrome mobile connection as above (120 ms, 750 KB/sec), two samples per version: original first-page 7,009/7,431 ms; precise loader 2,862/2,836 ms. About 61 percent faster in this test. Recorded PDF/opening traffic at the first rendered page fell from 22 requests / 1,408,824 bytes to 2 requests / 213,329 bytes, including one opening packet and one additional source block. These laptop simulations do not guarantee iPhone or live-network timings.
+
+All 61 packet payloads (30,626,051 bytes total) were verified byte-for-byte against unchanged originals. Old generated packets were removed from the active site; clients using older maps can fall back to original PDF ranges. No opening packet is fetched at startup.

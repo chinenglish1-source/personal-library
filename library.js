@@ -2,7 +2,7 @@
   const $ = (id) => document.getElementById(id);
   const grid = $("grid"), empty = $("empty"), status = $("status");
   const langBtns = [...$("langs").querySelectorAll("button")];
-  const tabBtns = [...$("tabs").querySelectorAll("button")];
+  const tabBtns = [...document.querySelectorAll("button[data-kind]")];
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const TEXT = { study: "Studying now", book: "Books", doc: "Docs", empty: "Nothing here yet." };
@@ -105,10 +105,11 @@
 
   let fadeTimer;
   function setView(nextLang, nextKind) {
-    if (nextLang === lang && nextKind === kind) return;
+    if (nextLang === lang && nextKind === kind && location.hash !== "#voices") return;
     lang = nextLang; kind = nextKind;
     try { history.replaceState(null, "", location.pathname + location.search + `#${lang}-${kind}`); } catch {}
     applyView();
+    window.dispatchEvent(new Event("librarysectionchange"));
   }
 
   langBtns.forEach((b) => b.addEventListener("click", () => setView(b.dataset.lang, kind)));
@@ -126,7 +127,7 @@
     }));
   }
   arrowNav(langBtns, (b) => setView(b.dataset.lang, kind));
-  arrowNav(tabBtns, (b) => setView(lang, b.dataset.kind));
+  arrowNav(tabBtns.filter(b => b.closest("#tabs")), (b) => setView(lang, b.dataset.kind));
 
   window.addEventListener("hashchange", () => { fromHash(); applyView(); });
 

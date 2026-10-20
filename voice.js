@@ -188,6 +188,7 @@
   function syncRoute(){swipe=null;if(location.hash==='#voices')showVoices();else hideVoices();}
   button.onclick=()=>{if(longHold){longHold=false;return;}openList();};
   $('voices-back').onclick=back;
+  window.addEventListener('librarysectionchange',hideVoices);
   window.addEventListener('popstate',syncRoute);
   window.addEventListener('hashchange',syncRoute);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden){e.preventDefault();back();}});

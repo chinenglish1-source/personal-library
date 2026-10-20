@@ -43,7 +43,7 @@
       : el("article", { class: "card" }, ...body);
     const li = el("li", { class: "item", "data-kind": it.kind, "data-lang": it.lang }, c);
     if (it.link) {
-      const button = el("button", {type:"button", class:"study-toggle", "data-href":it.link}, "Add to Studying now");
+      const button = el("button", {type:"button", class:"study-toggle", "data-href":it.link}, "+ Study");
       button.addEventListener("click", () => {
         const next = selected.includes(it.link) ? selected.filter(h => h !== it.link) : [...selected, it.link];
         if (store(studyKey, next)) { selected = next; applyView(); }
@@ -86,7 +86,7 @@
     for (const li of items) {
       const button = li.querySelector(".study-toggle");
       const active = button && selected.includes(button.dataset.href);
-      if (button) { button.textContent = active ? "Remove from study" : "Add to Studying now"; button.setAttribute("aria-pressed", String(active)); }
+      if (button) { button.textContent = active ? "✓ Study" : "+ Study"; button.setAttribute("aria-label", active ? "Remove from Studying now" : "Add to Studying now"); button.setAttribute("aria-pressed", String(active)); }
       li.hidden = kind === "study" ? !active : li.dataset.lang !== lang || li.dataset.kind !== kind;
       li.style.order = kind === "study" ? selected.indexOf(button?.dataset.href) : "";
     }

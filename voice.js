@@ -55,7 +55,7 @@
     urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
     const list = $('voice-list'); list.replaceChildren();
     if (!notes.length) { const empty=document.createElement('li'); empty.textContent='No voices yet.'; list.append(empty); }
-    for (const note of notes.sort((a,b) => b.created-a.created)) {
+    for (const note of notes.sort((a,b) => a.created-b.created)) {
       if (note.id === active?.id && state !== 'idle') continue;
       const li = document.createElement('li'), title = document.createElement('h3'), time = document.createElement('time');
       title.textContent = note.name + (note.draft ? ' — recovered draft' : '');
@@ -80,6 +80,7 @@
       button('Delete', async()=>{if(confirm(`Delete “${note.name}”? This cannot be undone.`)){await remove(note.id);await render();}});
       list.append(li);
     }
+    list.scrollTop=list.scrollHeight;
   }
   async function finish() {
     if(state === 'requesting') {
@@ -130,7 +131,7 @@
           a.onclick=()=>setTimeout(()=>URL.revokeObjectURL(url),60000);status.append(' ',a);
         }
         controls('idle');
-        if(panel.open)render().catch(storageFailure);
+        if(!panel.hidden)render().catch(storageFailure);
       };
       recorder.onerror=()=>{message('Recording interrupted. Saving the audio received.');finish();};
       media.getAudioTracks().forEach(track=>track.addEventListener('ended',finish));
@@ -162,10 +163,48 @@
   button.addEventListener('contextmenu',e=>e.preventDefault());
   button.addEventListener('keydown',e=>{if(e.key===' '&&!e.repeat){e.preventDefault();begin();}});
   button.addEventListener('keyup',e=>{if(e.key===' '){e.preventDefault();const held=longHold;release();if(!held)openList();}});
-  function openList(){if(state!=='idle')return;if(active&&chunks.length){recorder.onstop();return;}panel.showModal();render().catch(storageFailure);}
+  function showVoices() {
+    panel.hidden=false;document.body.classList.add('voices-open');$('main').inert=true;
+    $('voice-heading').focus({preventScroll:true});render().catch(storageFailure);
+  }
+  function hideVoices() {
+    if(panel.hidden)return;
+    release();panel.querySelectorAll('audio').forEach(a=>a.pause());
+    panel.hidden=true;document.body.classList.remove('voices-open');$('main').inert=false;button.focus({preventScroll:true});
+  }
+  function openList(){
+    if(state!=='idle')return;
+    if(active&&chunks.length){recorder.onstop();return;}
+    if(!panel.hidden)return;
+    history.pushState({libraryVoices:true,returnUrl:location.pathname+location.search+location.hash},'',location.pathname+location.search+'#voices');
+    showVoices();
+  }
+  function back() {
+    if(panel.hidden)return;
+    release();
+    if(history.state?.libraryVoices && history.state.returnUrl)history.back();
+    else {history.replaceState(null,'',location.pathname+location.search+'#ar-study');hideVoices();window.dispatchEvent(new HashChangeEvent('hashchange'));}
+  }
+  function syncRoute(){swipe=null;if(location.hash==='#voices')showVoices();else hideVoices();}
   button.onclick=()=>{if(longHold){longHold=false;return;}openList();};
-  $('voices-close').onclick=()=>panel.close();
-  panel.addEventListener('close',()=>{panel.querySelectorAll('audio').forEach(a=>a.pause());button.focus();});
+  $('voices-back').onclick=back;
+  window.addEventListener('popstate',syncRoute);
+  window.addEventListener('hashchange',syncRoute);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden){e.preventDefault();back();}});
+  let swipe;
+  panel.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    // Leave the screen edge to Safari's native history gesture.
+    swipe=e.touches.length===1&&t.clientX>48&&(window.visualViewport?.scale||1)<=1.05&&!String(getSelection())&&!e.target.closest('audio,button,a,summary,input')?{x:t.clientX,y:t.clientY,time:Date.now()}:null;
+  },{passive:true});
+  panel.addEventListener('touchmove',e=>{if(e.touches.length!==1||(swipe&&Math.abs(e.touches[0].clientY-swipe.y)>35))swipe=null;},{passive:true});
+  panel.addEventListener('touchcancel',()=>{swipe=null;},{passive:true});
+  panel.addEventListener('touchend',e=>{
+    const start=swipe;swipe=null;if(!start||e.touches.length||String(getSelection())||(window.visualViewport?.scale||1)>1.05||Date.now()-start.time>900)return;
+    const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;
+    if(dx>90&&dx>Math.abs(dy)*3)back();
+  },{passive:true});
+  syncRoute();
   window.addEventListener('blur',()=>{if(pressing)release();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
   window.addEventListener('pagehide',release);

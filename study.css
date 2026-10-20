@@ -32,3 +32,12 @@ body.reading #voice-dock{display:none}
 #voice-notes{position:fixed;width:min(560px,calc(100% - 24px));max-height:75dvh;overflow:auto;box-sizing:border-box;margin:auto;padding:20px;border-radius:18px}
 #voice-notes::backdrop{background:#0006}.voices-header{display:flex;justify-content:space-between;align-items:center;gap:12px}.voices-header h2{margin:0!important}
 #voice-list li{list-style:none}#voice-list details{display:inline-block;margin:0 0 0 12px}#voice-list details[open]{display:block;margin:8px 0}#voice-list summary{cursor:pointer}
+/* Voices is a history-backed chat screen, rather than a modal. */
+body.voices-open{overflow:hidden}
+#voice-notes{inset:0;width:100%;height:100%;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;z-index:40;display:flex;flex-direction:column;background:#eee8d9}
+#voice-notes .voices-header{flex-shrink:0;justify-content:flex-start;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;background:#f6f0e3;border-bottom:1px solid #c9bd9b}
+#voices-back{font-size:32px!important;line-height:1;padding:0!important;width:44px;border:0!important;background:none!important}
+#voice-notes #voice-list{flex:1;min-height:0;overflow:auto;margin:0;padding:22px 18px calc(100px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:14px;overscroll-behavior-y:contain}
+#voice-list li{flex-shrink:0;max-width:min(460px,90%);min-width:160px;box-sizing:border-box;background:#fffaf0;border:1px solid #d3c7a8;padding:14px 16px;border-radius:16px 16px 4px 16px;box-shadow:0 2px 5px #00000008}
+#voice-list h3{font-size:15px}#voice-list time{display:block;color:#65705a;margin-bottom:8px;font-size:12px}
+#voice-notes .voices-header h2{font-size:20px}#voice-list audio{max-width:100%}

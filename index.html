@@ -442,7 +442,7 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
-<link rel="stylesheet" href="study.css?v=9">
+<link rel="stylesheet" href="study.css?v=10">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -483,16 +483,17 @@ dialog button {padding:10px 20px;cursor:pointer}
   <p id="app-message" class="app-message" role="status" hidden></p>
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
-  <div id="voice-dock">
-    <p id="voice-status" role="status" aria-live="polite" hidden></p>
-    <button id="voices-button" type="button" aria-label="Voices. Tap to listen; hold one second to record." aria-haspopup="dialog">Voices</button>
-  </div>
-  <dialog id="voice-notes" aria-labelledby="voice-heading">
-    <header class="voices-header"><h2 id="voice-heading">Voices</h2><button id="voices-close" type="button" aria-label="Close voices">Close</button></header>
-    <ul id="voice-list" aria-label="Saved voices"></ul>
-  </dialog>
   <p class="sr-only" id="status" aria-live="polite"></p>
 </main>
+  <div id="voice-dock">
+    <p id="voice-status" role="status" aria-live="polite" hidden></p>
+    <button id="voices-button" type="button" aria-label="Voices. Tap to listen; hold one second to record." aria-controls="voice-notes">Voices</button>
+  </div>
+  <section id="voice-notes" aria-labelledby="voice-heading" hidden>
+    <header class="voices-header"><button id="voices-back" type="button" aria-label="Back to library">‹</button><h2 id="voice-heading" tabindex="-1">Voices</h2></header>
+    <ul id="voice-list" aria-label="Saved voices"></ul>
+  </section>
+
 
 <div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" hidden>
   <div class="reader-bar">
@@ -509,8 +510,8 @@ dialog button {padding:10px 20px;cursor:pointer}
 
 
 
-<script src="library.js?v=9" defer></script>
-<script src="voice.js?v=9" defer></script>
-<script src="app.js?v=9" defer></script>
+<script src="library.js?v=10" defer></script>
+<script src="voice.js?v=10" defer></script>
+<script src="app.js?v=10" defer></script>
 </body>
 </html>

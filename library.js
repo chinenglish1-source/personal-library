@@ -133,7 +133,7 @@
       const button = li.querySelector(".study-toggle");
       const active = button && selected.includes(button.dataset.href);
       if (button) { button.textContent = active ? "✓ Study" : "+ Study"; button.setAttribute("aria-label", active ? "Remove from Studying now" : "Add to Studying now"); button.setAttribute("aria-pressed", String(active)); }
-      if(button && kind === "study")button.textContent="×";
+      if(button && kind === "study")button.textContent="Remove";
       const progress=li.querySelector(".study-progress");
       if(progress){const saved=savedPositions[button.dataset.href];progress.textContent=saved?.page ? `Continue · page ${saved.page}` : "Open";}
       li.hidden = kind === "study" ? !active : li.dataset.kind !== kind;

@@ -28,6 +28,48 @@
     try { localStorage.setItem(key, JSON.stringify(value)); return true; }
     catch { $("app-message").hidden = false; $("app-message").textContent = "Device storage is unavailable or full. New selections and progress cannot be saved."; return false; }
   }
+  let undoItem=null, undoTimer, suppressStudyClickUntil=0;
+  function removeStudy(href) {
+    const index=selected.indexOf(href);if(index<0)return;
+    const next=selected.filter(h=>h!==href);
+    if(!store(studyKey,next))return;
+    selected=next;undoItem={href,index};applyView();
+    $("study-undo").hidden=false;clearTimeout(undoTimer);
+    undoTimer=setTimeout(()=>{$("study-undo").hidden=true;undoItem=null;},8000);
+  }
+  $("study-undo-button").onclick=()=>{
+    if(!undoItem)return;
+    const next=selected.filter(h=>h!==undoItem.href);next.splice(Math.min(undoItem.index,next.length),0,undoItem.href);
+    if(store(studyKey,next)){selected=next;applyView();$("study-undo").hidden=true;clearTimeout(undoTimer);undoItem=null;}
+  };
+  function studySwipe(li,href) {
+    let drag=null;
+    const reset=()=>{li.style.transform='';li.classList.remove('swiping');drag=null;};
+    li.addEventListener('pointerdown',e=>{
+      if(kind!=='study'||e.button!==0||!e.isPrimary||e.target.closest('button')||(window.visualViewport?.scale||1)>1.05||String(getSelection())){reset();return;}
+      drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,horizontal:false};
+    });
+    li.addEventListener('pointermove',e=>{
+      if(!drag||e.pointerId!==drag.id)return;
+      const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+      if(!drag.horizontal&&Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)){reset();return;}
+      if((window.visualViewport?.scale||1)>1.05||String(getSelection())){reset();return;}
+      if(dx < -12 && Math.abs(dx)>Math.abs(dy)*2){drag.horizontal=true;li.classList.add('swiping');li.setPointerCapture(e.pointerId);}
+      if(drag.horizontal){drag.dx=Math.min(0,dx);li.style.transform=`translate3d(${drag.dx}px,0,0)`;suppressStudyClickUntil=Date.now()+500;}
+    });
+    li.addEventListener('pointerup',e=>{
+      if(!drag||e.pointerId!==drag.id)return;
+      const remove=drag.horizontal&&-drag.dx>Math.max(95,li.clientWidth*.32);
+      const dx=drag.dx;reset();
+      if(remove){
+        suppressStudyClickUntil=Date.now()+600;
+        li.animate([{transform:`translateX(${dx}px)`,opacity:1},{transform:'translateX(-110%)',opacity:0}],{duration:reduceMotion.matches?0:170,easing:'ease-out'}).finished.then(()=>removeStudy(href));
+      }
+    });
+    li.addEventListener('pointercancel',reset);
+    li.addEventListener('lostpointercapture',e=>{if(e.target===li)reset();});
+    li.addEventListener('touchstart',e=>{if(e.touches.length>1)reset();},{passive:true});
+  }
   function card(it) {
     const preview = it.link
       ? el("div", { class: "preview", "data-src": it.link, "aria-hidden": "true" },
@@ -45,10 +87,13 @@
     if (it.link) {
       const button = el("button", {type:"button", class:"study-toggle", "data-href":it.link}, "+ Study");
       button.addEventListener("click", () => {
+        if(kind === "study" && selected.includes(it.link)){removeStudy(it.link);return;}
         const next = selected.includes(it.link) ? selected.filter(h => h !== it.link) : [...selected, it.link];
         if (store(studyKey, next)) { selected = next; applyView(); }
       });
       li.append(button);
+      li.append(el("span",{class:"study-progress","aria-hidden":"true"}));
+      studySwipe(li,it.link);
     }
     return li;
   }
@@ -58,6 +103,7 @@
     .map((it) => it.kind === "book" && it.type !== "PDF" ? { ...it, kind: "doc" } : it)
     .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))
     .map(card);
+  const itemByHref=new Map(items.map(li=>[li.querySelector(".study-toggle")?.dataset.href,li]));
   grid.append(...items);
 
   let lang = "ar", kind = "study";
@@ -75,6 +121,7 @@
 
   function applyView() {
     grid.dataset.kind = kind;
+    document.body.classList.toggle("study-view",kind==="study");
     const t = TEXT;
     langBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     tabBtns.forEach((b) => {
@@ -83,10 +130,14 @@
     });
     $("langs").hidden = kind === "study";
 
+    const savedPositions=readStore(positionKey, {});
     for (const li of items) {
       const button = li.querySelector(".study-toggle");
       const active = button && selected.includes(button.dataset.href);
       if (button) { button.textContent = active ? "✓ Study" : "+ Study"; button.setAttribute("aria-label", active ? "Remove from Studying now" : "Add to Studying now"); button.setAttribute("aria-pressed", String(active)); }
+      if(button && kind === "study")button.textContent="×";
+      const progress=li.querySelector(".study-progress");
+      if(progress){const saved=savedPositions[button.dataset.href];progress.textContent=saved?.page ? `Continue · page ${saved.page}` : "Open";}
       li.hidden = kind === "study" ? !active : li.dataset.lang !== lang || li.dataset.kind !== kind;
       li.style.order = kind === "study" ? selected.indexOf(button?.dataset.href) : "";
     }
@@ -543,6 +594,8 @@
     positions[session.href] = {page:Number(box.dataset.page), offset:Math.max(0, Math.min(.99, (top - box.getBoundingClientRect().top) / box.clientHeight)), updated:Date.now()};
     store(positionKey, positions);
     rCount.textContent = `${box.dataset.page} / ${boxes.length}`;
+    const item=itemByHref.get(session.href);
+    if(item)item.querySelector(".study-progress").textContent=`Continue · page ${box.dataset.page}`;
   }
   let positionTimer;
   pages.addEventListener("scroll", () => { clearTimeout(positionTimer); positionTimer = setTimeout(savePosition, 150); }, {passive:true});
@@ -606,6 +659,7 @@
   });
 
   grid.addEventListener("click", (e) => {
+    if(Date.now()<suppressStudyClickUntil){e.preventDefault();return;}
     const a = e.target.closest("a.card");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     e.preventDefault();

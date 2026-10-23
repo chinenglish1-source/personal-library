@@ -75,3 +75,14 @@ body.reading #voice-dock{display:grid;width:min(240px,calc(100% - 28px));grid-te
 body.reading #voice-dock>[data-kind]{display:none}
 body.reading #voices-button{font-size:15px}
 body.reading #pages{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+
+/* Compact voice notes and one microphone control. */
+#voice-dock>#voices-button{display:flex;align-items:center;justify-content:center;gap:6px}
+.mic-icon{flex:none;pointer-events:none}.mic-time{font-variant-numeric:tabular-nums;pointer-events:none}.mic-time:empty{display:none}
+#voice-list li:has(time){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;align-items:center;min-width:0;width:min(320px,100%);max-width:100%;padding:12px 14px;border-radius:12px}
+#voice-list li h3{grid-column:1;margin:0;font-size:14px}
+#voice-list li time{grid-column:1;margin:3px 0 0;font-size:12px}
+#voice-list li>button{grid-column:2;grid-row:1/3;margin:0;padding:8px 12px}
+#voice-list li audio{grid-column:1/-1;margin:8px 0 0}
+body.reading #voice-dock{width:max-content;min-width:64px;max-width:calc(100% - 28px)}
+body.reading #voice-dock>#voices-button{padding:12px 18px}

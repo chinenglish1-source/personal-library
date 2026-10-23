@@ -44,7 +44,8 @@
   function controls(next) {
     state = next;
     button.dataset.recording = String(next === 'recording');
-    button.textContent = next === 'recording' ? '● Recording 00:00' : next === 'saving' ? 'Saving…' : 'Voices';
+    button.querySelector('.mic-time').textContent = next === 'recording' ? '00:00' : next === 'saving' ? '…' : '';
+    button.setAttribute('aria-label', next === 'recording' ? 'Recording. Release to save.' : 'Voices. Tap to listen; hold 1 second to record.');
     button.setAttribute('aria-busy', String(next === 'saving'));
   }
   function cleanup() { clearInterval(timer); stream?.getTracks().forEach(t => t.stop()); stream = null; }
@@ -59,7 +60,7 @@
       if (note.id === active?.id && state !== 'idle') continue;
       const li = document.createElement('li'), title = document.createElement('h3'), time = document.createElement('time');
       title.textContent = note.name + (note.draft ? ' — recovered draft' : '');
-      time.dateTime = new Date(note.created).toISOString(); time.textContent = new Date(note.created).toLocaleString(); li.append(title,time);
+      time.dateTime = new Date(note.created).toISOString(); time.textContent = new Date(note.created).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); li.append(title,time);
       // Audio data stays in IndexedDB until the user requests playback.
       const play = document.createElement('button'); play.textContent = 'Play'; play.type = 'button';
       play.onclick = async () => {
@@ -72,12 +73,6 @@
         } catch { message('Could not load this recording. Please try again.'); }
       };
       li.append(play);
-      const options=document.createElement('details'), summary=document.createElement('summary');summary.textContent='Options';options.append(summary);li.append(options);
-      function button(label, action) { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=async()=>{try{await action();}catch{storageFailure();}}; options.append(b); }
-      if(note.draft) button('Keep draft', async()=>{note.draft=false;await put(note);await render();});
-      button('Rename', async()=>{const name=prompt('Name this voice note', note.name);if(name?.trim()){note.name=name.trim().slice(0,160);await put(note);await render();}});
-      button('Save audio file', async()=>{const blob=await audioBlob(note);const url=URL.createObjectURL(blob);urls.push(url);const a=document.createElement('a');a.href=url;a.download=note.name+(note.mime?.includes('mp4')?'.m4a':'.webm');a.click();});
-      button('Delete', async()=>{if(confirm(`Delete “${note.name}”? This cannot be undone.`)){await remove(note.id);await render();}});
       list.append(li);
     }
     list.scrollTop=list.scrollHeight;
@@ -140,7 +135,7 @@
       recorder.onerror=()=>{message('Recording interrupted. Saving the audio received.');finish();};
       media.getAudioTracks().forEach(track=>track.addEventListener('ended',finish));
       recorder.start(1000);controls('recording');message('');
-      timer=setInterval(()=>button.textContent='● Recording '+formatDuration(Date.now()-started),250);
+      timer=setInterval(()=>button.querySelector('.mic-time').textContent=formatDuration(Date.now()-started),250);
       navigator.storage?.persist?.().catch(()=>{});
     }catch(e){
       media?.getTracks().forEach(t=>t.stop());
@@ -154,7 +149,7 @@
   function begin() {
     if(state!=='idle')return;
     pressing=true;longHold=false;
-    holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1500);
+    holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1000);
   }
   button.addEventListener('pointerdown',e=>{
     if(!e.isPrimary){release();longHold=true;return;}
@@ -179,7 +174,7 @@
     panel.hidden=true;document.body.classList.remove('voices-open');
   }
   function openList(){
-    if(document.body.classList.contains('reading')){message('Hold Voices for 1.5 seconds to record. Release to save.');return;}
+    if(document.body.classList.contains('reading')){message('Hold the microphone for 1 second to record. Release to save.');return;}
     if(state!=='idle')return;
     if(active&&chunks.length){recorder.onstop();return;}
     if(!panel.hidden)return;

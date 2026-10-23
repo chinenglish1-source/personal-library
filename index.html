@@ -330,7 +330,7 @@ body {
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23B89A60%22%20stroke-opacity%3D%22.12%22%20stroke-width%3D%22.7%22%3E%3Cpath%20d%3D%22M50%206%2063%2019%2081%2019%2081%2037%2094%2050%2081%2063%2081%2081%2063%2081%2050%2094%2037%2081%2019%2081%2019%2063%206%2050%2019%2037%2019%2019%2037%2019Z%22%2F%3E%3Cpath%20d%3D%22m50%2019%2031%2031-31%2031-31-31Z%20M0%200%2019%2019%20M81%2019%20100%200%20M81%2081%20100%20100%20M19%2081%200%20100%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%228%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-attachment: fixed;
 }
-.grid[data-kind], .empty {
+.grid[data-kind], .empty, .collection-surface {
   --ink: #F4E7CD;
   --muted: #D4BFA0;
   color: var(--ink);
@@ -367,7 +367,7 @@ body {
   box-shadow: inset 0 0 0 3px rgb(185 151 90 / .12);
 }
 .tabs { margin-bottom: 20px; border-bottom: 3px double var(--line-strong); }
-.grid[data-kind], .empty {
+.grid[data-kind], .empty, .collection-surface {
   background-color: #352319;
   background-image:
     linear-gradient(90deg, rgb(12 6 2 / .4), transparent 9% 91%, rgb(12 6 2 / .4)),
@@ -473,6 +473,9 @@ dialog button {padding:10px 20px;cursor:pointer}
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
   <p class="sr-only" id="status" aria-live="polite"></p>
+  <section id="voice-notes" class="collection-surface" aria-label="Voices" hidden>
+    <ul id="voice-list" aria-label="Saved voices"></ul>
+  </section>
 </main>
   <div id="study-undo" role="status" hidden>Removed from study <button id="study-undo-button" type="button">Undo</button></div>
   <nav id="voice-dock" aria-label="Library sections">
@@ -482,10 +485,7 @@ dialog button {padding:10px 20px;cursor:pointer}
     <button id="books-button" type="button" data-kind="book" aria-pressed="false">Books</button>
     <button id="docs-button" type="button" data-kind="doc" aria-pressed="false">Docs</button>
   </nav>
-  <section id="voice-notes" aria-labelledby="voice-heading" hidden>
-    <header class="voices-header"><button id="voices-back" type="button" aria-label="Back to library">‹</button><h2 id="voice-heading" tabindex="-1">Voices</h2></header>
-    <ul id="voice-list" aria-label="Saved voices"></ul>
-  </section>
+
 
 
 <div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" hidden>

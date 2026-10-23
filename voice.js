@@ -153,7 +153,7 @@
   }
   function begin() {
     if(state!=='idle')return;
-    pressing=true;longHold=false;button.classList.add('holding');
+    pressing=true;longHold=false;
     holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1000);
   }
   button.addEventListener('pointerdown',e=>{
@@ -170,13 +170,13 @@
   function showVoices() {
     button.setAttribute('aria-pressed','true');
     document.querySelectorAll('#voice-dock [data-kind]').forEach(b=>b.setAttribute('aria-pressed','false'));
-    panel.hidden=false;document.body.classList.add('voices-open');$('main').inert=true;
-    $('voice-heading').focus({preventScroll:true});render().catch(storageFailure);
+    panel.hidden=false;document.body.classList.add('voices-open');
+    render().catch(storageFailure);
   }
   function hideVoices() {
     if(panel.hidden)return;
     release();panel.querySelectorAll('audio').forEach(a=>a.pause());
-    panel.hidden=true;document.body.classList.remove('voices-open');$('main').inert=false;button.focus({preventScroll:true});
+    panel.hidden=true;document.body.classList.remove('voices-open');
   }
   function openList(){
     if(state!=='idle')return;
@@ -193,7 +193,6 @@
   }
   function syncRoute(){swipe=null;if(location.hash==='#voices')showVoices();else hideVoices();}
   button.onclick=()=>{if(longHold){longHold=false;return;}openList();};
-  $('voices-back').onclick=back;
   window.addEventListener('librarysectionchange',hideVoices);
   window.addEventListener('popstate',syncRoute);
   window.addEventListener('hashchange',syncRoute);

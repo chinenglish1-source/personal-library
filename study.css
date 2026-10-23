@@ -58,3 +58,14 @@ body.reading #study-undo,body.voices-open #study-undo{display:none}
 #voice-notes{background:inherit;color:var(--ink)}
 #voice-notes .voices-header{background:var(--bg);border-bottom:1px solid var(--line-strong)}
 #voice-notes .voices-header h2,#voice-notes #voices-back{color:var(--ink)}
+
+/* Voices is a regular collection in the shared page, with no overlay or focus jump. */
+body.voices-open{overflow: auto}
+body.voices-open #grid,body.voices-open #empty{display:none!important}
+#voice-notes{position:static;inset:auto;width:100%;height:auto;min-height:320px;max-height:none;max-width:none;margin:0;padding:22px 18px;box-sizing:border-box;display:block;overflow:visible;z-index:auto;border:3px double #9e804c;border-left:0;border-right:0;border-radius:2px;background-color:#352319;background-image:linear-gradient(90deg, rgb(12 6 2 / .4), transparent 9% 91%, rgb(12 6 2 / .4)),repeating-linear-gradient(89deg, transparent 0 5px, rgb(204 157 96 / .035) 6px, transparent 8px 14px),repeating-linear-gradient(92deg, rgb(12 6 2 / .07) 0 1px, transparent 2px 12px),radial-gradient(ellipse at 50% 0, #715236, transparent 85%);box-shadow:inset 0 10px 18px -6px #0008,0 12px 24px -16px #0008}
+#voice-notes #voice-list{overflow:visible;min-height:0;margin:0;padding:0;gap:14px}
+#voice-list li{color:#173f35}
+#voice-list li:only-child:not(:has(time)){align-self:center;background:none;border:0;box-shadow:none;color:#f4e7cd;text-align:center;padding:60px 12px}
+#voice-dock>button:focus:not(:focus-visible){outline:none}
+
+html{scrollbar-gutter:stable}

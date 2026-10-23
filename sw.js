@@ -1,4 +1,4 @@
-const CACHE = 'library-shell-v23';
+const CACHE = 'library-shell-v24';
 const BASE = new URL('./', self.location.href);
 const SHELL = ['./', 'index.html', 'catalog.js', 'library.js?v=23', 'app.js?v=23', 'voice.js?v=23', 'study.css?v=23', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {

@@ -1,11 +1,10 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const grid = $("grid"), empty = $("empty"), status = $("status");
-  const langBtns = [...$("langs").querySelectorAll("button")];
   const tabBtns = [...document.querySelectorAll("button[data-kind]")];
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  const TEXT = { study: "Studying now", book: "Books", doc: "Docs", empty: "Nothing here yet." };
+  const TEXT = { study: "Studying", book: "Books", doc: "Docs", empty: "Nothing here yet." };
 
   function el(tag, attrs, ...kids) {
     const n = document.createElement(tag);
@@ -123,12 +122,11 @@
     grid.dataset.kind = kind;
     document.body.classList.toggle("study-view",kind==="study");
     const t = TEXT;
-    langBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     tabBtns.forEach((b) => {
       b.textContent = t[b.dataset.kind];
-      b.setAttribute("aria-pressed", String(b.dataset.kind === kind));
+      b.setAttribute("aria-pressed", String(b.dataset.kind === kind && location.hash !== "#voices"));
     });
-    $("langs").hidden = kind === "study";
+    $("voices-button").setAttribute("aria-pressed", String(location.hash === "#voices"));
 
     const savedPositions=readStore(positionKey, {});
     for (const li of items) {
@@ -138,7 +136,7 @@
       if(button && kind === "study")button.textContent="×";
       const progress=li.querySelector(".study-progress");
       if(progress){const saved=savedPositions[button.dataset.href];progress.textContent=saved?.page ? `Continue · page ${saved.page}` : "Open";}
-      li.hidden = kind === "study" ? !active : li.dataset.lang !== lang || li.dataset.kind !== kind;
+      li.hidden = kind === "study" ? !active : li.dataset.kind !== kind;
       li.style.order = kind === "study" ? selected.indexOf(button?.dataset.href) : "";
     }
     grid.append(...(kind === "study" ? [...items].sort((a,b) => Number(a.style.order)-Number(b.style.order)) : items));
@@ -163,7 +161,6 @@
     window.dispatchEvent(new Event("librarysectionchange"));
   }
 
-  langBtns.forEach((b) => b.addEventListener("click", () => setView(b.dataset.lang, kind)));
   tabBtns.forEach((b) => b.addEventListener("click", () => setView(lang, b.dataset.kind)));
 
   /* Arrow keys move between buttons in a group. */
@@ -177,8 +174,7 @@
       pick(btns[j]);
     }));
   }
-  arrowNav(langBtns, (b) => setView(b.dataset.lang, kind));
-  arrowNav(tabBtns.filter(b => b.closest("#tabs")), (b) => setView(lang, b.dataset.kind));
+  arrowNav([...$("voice-dock").querySelectorAll("button")], (b) => b.click());
 
   window.addEventListener("hashchange", () => { fromHash(); applyView(); });
 

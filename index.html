@@ -442,7 +442,7 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
-<link rel="stylesheet" href="study.css?v=21">
+<link rel="stylesheet" href="study.css?v=22">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -469,27 +469,19 @@ dialog button {padding:10px 20px;cursor:pointer}
     <h1 class="sr-only">Library</h1>
   </header>
 
-  <div class="langs" role="group" aria-label="Language" id="langs">
-    <button type="button" data-lang="ar" aria-pressed="true">Arabic</button>
-    <button type="button" data-lang="en" aria-pressed="false">English</button>
-  </div>
-
-  <div class="tabs" role="group" aria-label="Section" id="tabs">
-    <button type="button" data-kind="book" aria-pressed="false">Books</button>
-    <button type="button" data-kind="doc" aria-pressed="false">Docs</button>
-  </div>
-
   <p id="app-message" class="app-message" role="status" hidden></p>
   <ul class="grid" id="grid" aria-label="Library"></ul>
   <p class="empty" id="empty" hidden></p>
   <p class="sr-only" id="status" aria-live="polite"></p>
 </main>
   <div id="study-undo" role="status" hidden>Removed from study <button id="study-undo-button" type="button">Undo</button></div>
-  <div id="voice-dock">
+  <nav id="voice-dock" aria-label="Library sections">
     <p id="voice-status" role="status" aria-live="polite" hidden></p>
-    <button id="study-button" type="button" data-kind="study" aria-pressed="true">Studying now</button>
-    <button id="voices-button" type="button" aria-label="Voices. Tap to listen; hold one second to record." aria-controls="voice-notes">Voices</button>
-  </div>
+    <button id="study-button" type="button" data-kind="study" aria-pressed="true">Studying</button>
+    <button id="voices-button" type="button" aria-label="Voices. Tap to listen; hold one second to record." aria-controls="voice-notes" aria-pressed="false">Voices</button>
+    <button id="books-button" type="button" data-kind="book" aria-pressed="false">Books</button>
+    <button id="docs-button" type="button" data-kind="doc" aria-pressed="false">Docs</button>
+  </nav>
   <section id="voice-notes" aria-labelledby="voice-heading" hidden>
     <header class="voices-header"><button id="voices-back" type="button" aria-label="Back to library">‹</button><h2 id="voice-heading" tabindex="-1">Voices</h2></header>
     <ul id="voice-list" aria-label="Saved voices"></ul>
@@ -511,8 +503,8 @@ dialog button {padding:10px 20px;cursor:pointer}
 
 
 
-<script src="library.js?v=21" defer></script>
-<script src="voice.js?v=21" defer></script>
-<script src="app.js?v=21" defer></script>
+<script src="library.js?v=22" defer></script>
+<script src="voice.js?v=22" defer></script>
+<script src="app.js?v=22" defer></script>
 </body>
 </html>

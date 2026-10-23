@@ -168,6 +168,8 @@
   button.addEventListener('keydown',e=>{if(e.key===' '&&!e.repeat){e.preventDefault();begin();}});
   button.addEventListener('keyup',e=>{if(e.key===' '){e.preventDefault();const held=longHold;release();if(!held)openList();}});
   function showVoices() {
+    button.setAttribute('aria-pressed','true');
+    document.querySelectorAll('#voice-dock [data-kind]').forEach(b=>b.setAttribute('aria-pressed','false'));
     panel.hidden=false;document.body.classList.add('voices-open');$('main').inert=true;
     $('voice-heading').focus({preventScroll:true});render().catch(storageFailure);
   }

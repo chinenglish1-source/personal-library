@@ -43,7 +43,6 @@ const LIBRARY = [
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 10.04", link: "files/37.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 09.59", link: "files/38.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-04-02", title: "CamScanner 04-02-2024 09.51", link: "files/39.pdf" },
-  { lang: "ar", kind: "book", type: "PDF", date: "2024-03-22", title: "مبادئ الأصول 3", link: "files/40.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 11.47", link: "files/41.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 12.05", link: "files/42.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2024-03-21", title: "CamScanner 03-21-2024 10.17", link: "files/43.pdf" },

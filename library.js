@@ -351,13 +351,15 @@
       if (hosted && hostedFiles[box.dataset.src]) {
         const cover = new Image();
         cover.alt = "";
-        cover.fetchPriority = "low";
+        cover.fetchPriority = box.getBoundingClientRect().top < innerHeight ? "high" : "low";
         cover.src = hostedFiles[box.dataset.src].cover;
         await cover.decode();
-        const scale = Math.min(box.clientWidth / cover.naturalWidth, box.clientHeight / cover.naturalHeight);
-        cover.style.width = `${Math.floor(cover.naturalWidth * scale)}px`;
-        cover.style.height = `${Math.floor(cover.naturalHeight * scale)}px`;
-        box.replaceChildren(el("span", { class: "book-volume" }, cover));
+        // CSS sizing stays valid even when a section hides during decoding.
+        const volume = el("span", { class: "book-volume" }, cover);
+        volume.style.width = `min(100%, calc(var(--cover-height) * ${cover.naturalWidth / cover.naturalHeight}))`;
+        cover.style.width = "100%";
+        cover.style.height = "auto";
+        box.replaceChildren(volume);
         box.dataset.state = "ready";
         return;
       }

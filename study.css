@@ -69,3 +69,9 @@ body.voices-open #grid,body.voices-open #empty{display:none!important}
 #voice-dock>button:focus:not(:focus-visible){outline:none}
 
 html{scrollbar-gutter:stable}
+
+/* The same hold-to-record control stays available inside the reader. */
+body.reading #voice-dock{display:grid;width:min(240px,calc(100% - 28px));grid-template-columns:1fr}
+body.reading #voice-dock>[data-kind]{display:none}
+body.reading #voices-button{font-size:15px}
+body.reading #pages{padding-bottom:calc(100px + env(safe-area-inset-bottom))}

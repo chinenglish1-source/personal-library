@@ -154,7 +154,7 @@
   function begin() {
     if(state!=='idle')return;
     pressing=true;longHold=false;
-    holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1000);
+    holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1500);
   }
   button.addEventListener('pointerdown',e=>{
     if(!e.isPrimary){release();longHold=true;return;}
@@ -179,6 +179,7 @@
     panel.hidden=true;document.body.classList.remove('voices-open');
   }
   function openList(){
+    if(document.body.classList.contains('reading')){message('Hold Voices for 1.5 seconds to record. Release to save.');return;}
     if(state!=='idle')return;
     if(active&&chunks.length){recorder.onstop();return;}
     if(!panel.hidden)return;

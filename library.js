@@ -417,6 +417,7 @@
     rTitle.textContent = title;
     rCount.textContent = "";
     pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "Opening…"));
+    reader.append($("voice-dock"));
     reader.hidden = false;
     $("main").inert = true;
     document.body.classList.add("reading");
@@ -633,6 +634,7 @@
 
   function hideReader() {
     releaseReader();
+    reader.before($("voice-dock"));
     reader.hidden = true;
     $("main").inert = false;
     document.body.classList.remove("reading");
@@ -666,7 +668,7 @@
     if (reader.hidden) return;
     if (e.key === "Escape") { e.preventDefault(); closeReader(); }
     if (e.key === "Tab") {
-      const controls = [...reader.querySelectorAll("button:not(:disabled), [tabindex='0']")];
+      const controls = [...reader.querySelectorAll("button:not(:disabled), [tabindex='0']")].filter(n=>n.getClientRects().length);
       const first = controls[0], last = controls[controls.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }

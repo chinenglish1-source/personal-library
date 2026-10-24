@@ -102,9 +102,8 @@ body.reading #voice-dock>#voices-button{padding:12px 18px}
 #voice-list .voice-message .voice-delete{grid-column:3;grid-row:2/4;align-self:center;background:#fff7ed;border:1px solid #a66a50;border-radius:12px;min-width:82px;min-height:48px;margin:0;padding:10px 14px;font:600 16px system-ui;color:#8b3528}
 #voice-list .voice-message audio{display:none}
 /* Direct downloads and a compact long-document scrubber. */
-.item-download{display:block;align-self:center;min-width:76px;min-height:44px;padding:7px 12px;margin:-10px auto 12px;border:1px solid #a69367;border-radius:12px;background:#f6f0e3;color:#173f35;font:600 12px system-ui;cursor:pointer}
-.item-download:disabled{opacity:.7}.grid[data-kind=study] .study-progress{margin:0 8px 14px}
-#reader-download{min-height:44px;font-size:13px;white-space:nowrap}
+.grid[data-kind=study] .study-progress{margin:0 8px 14px}
+#reader-download{min-width:44px;min-height:44px;padding:8px;font:600 20px/1 system-ui;white-space:nowrap}
 #page-jump{position:absolute;right:calc(2px + env(safe-area-inset-right));top:50%;transform:translateY(-40%);height:min(42dvh,300px);width:36px;z-index:12;--page-progress:0}
 #page-slider{writing-mode:vertical-lr;direction:ltr;appearance:none;-webkit-appearance:none;display:block;width:36px;height:100%;padding:0;margin:0;background:transparent;touch-action:none;cursor:ns-resize}
 #page-slider::-webkit-slider-runnable-track{width:5px;height:100%;background:#b5a47e99;border-radius:5px}

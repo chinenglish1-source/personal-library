@@ -91,9 +91,6 @@
         if (store(studyKey, next)) { selected = next; applyView(); }
       });
       li.append(button);
-      const download = el("button", {type:"button", class:"item-download", "aria-label":"Download PDF: " + it.title}, "↓ PDF");
-      download.addEventListener("click", () => downloadPDF(it.link, it.title, download));
-      li.append(download);
       li.append(el("span",{class:"study-progress","aria-hidden":"true"}));
       studySwipe(li,it.link);
     }
@@ -419,7 +416,7 @@
     };
     $("page-jump").hidden = true;
     $("reader-download").disabled = false;
-    $("reader-download").textContent = "Download PDF";
+    $("reader-download").textContent = "↓";
     rTitle.textContent = title;
     rCount.textContent = "";
     pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "Opening…"));
@@ -505,7 +502,7 @@
     if (!file?.parts) { saveDownload(href, title); return; }
     if (button.disabled) return;
     const label = button.textContent; button.disabled = true;
-    button.textContent = "Preparing…";
+    button.textContent = "…";
     try {
       const pieces = []; let received = 0;
       for (const part of file.parts) {
@@ -515,7 +512,7 @@
         for (;;) {
           const {done, value} = await stream.read(); if (done) break;
           pieces.push(value); received += value.byteLength;
-          button.textContent = `Download ${Math.min(100, Math.round(received / file.size * 100))}%`;
+          button.textContent = `${Math.min(100, Math.round(received / file.size * 100))}%`;
         }
       }
       if (received !== file.size) throw Error("Incomplete download");

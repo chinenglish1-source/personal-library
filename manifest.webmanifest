@@ -6,8 +6,8 @@
   "start_url": "./#ar-study",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#070e0d",
-  "theme_color": "#070e0d",
+  "background_color": "#f3ecdb",
+  "theme_color": "#173f35",
   "icons": [
     {
       "src": "icons/icon-192.png",

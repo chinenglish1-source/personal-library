@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Library</title>
 
-<script src="catalog.js?v=34" defer></script>
+<script src="catalog.js?v=35" defer></script>
 
 <style>
 /* Manuscript palette: parchment, green ink, antique gold. */
@@ -442,8 +442,8 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
-<link rel="stylesheet" href="study.css?v=34">
-<link rel="stylesheet" href="future.css?v=34">
+<link rel="stylesheet" href="study.css?v=35">
+<link rel="stylesheet" href="future.css?v=35">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -460,36 +460,10 @@ dialog button {padding:10px 20px;cursor:pointer}
 
 <main class="wrap" id="main">
   <header class="masthead">
-    <div class="library-brand"><p class="brand-eyebrow"><span></span> PERSONAL ARCHIVE</p><h1>MY<br><span>LIBRARY</span></h1><p class="brand-caption">Read. Study. Remember.</p></div>
-    <svg class="robot-hero" aria-hidden="true" width="460" height="420" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 420" fill="none">
-<defs>
-<linearGradient id="metal" x1="150" y1="100" x2="310" y2="290" gradientUnits="userSpaceOnUse"><stop stop-color="#b6cdc5"/><stop offset=".3" stop-color="#526960"/><stop offset=".55" stop-color="#1b3028"/><stop offset=".8" stop-color="#6d877b"/><stop offset="1" stop-color="#10261c"/></linearGradient>
-<linearGradient id="edge" x1="90" y1="0" x2="350" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#234f36"/><stop offset=".5" stop-color="#b5ffd2"/><stop offset="1" stop-color="#17472a"/></linearGradient>
-<radialGradient id="halo"><stop stop-color="#53ff7b" stop-opacity=".2"/><stop offset="1" stop-color="#53ff7b" stop-opacity="0"/></radialGradient>
-<filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="4"/></filter>
-</defs>
-<circle cx="230" cy="200" r="195" fill="url(#halo)"/>
-<g stroke="#52f989" stroke-opacity=".25"><circle cx="230" cy="192" r="155"/><circle cx="230" cy="192" r="177" stroke-dasharray="2 12"/><path d="M230 4v28m0 320v28M38 192h28m328 0h28M64 86h58l20 20m176 170 22 22h60M67 305h55l20-20m176-184 20-20h66"/></g>
-<path d="M73 198a157 157 0 0 1 55-126M343 299a157 157 0 0 0 41-135" stroke="#87ff9e" stroke-width="3"/>
-<path d="m190 272-3 39-70 28-26 65h278l-26-65-70-28-3-39" fill="#142b20" stroke="url(#edge)" stroke-width="2"/>
-<path d="m187 311 43 28 43-28M117 339l72 17 41 40 41-40 72-17M140 347l-16 45m196-45 16 45" stroke="#426d51" stroke-width="3"/>
-<path d="M202 284v29l28 17 28-17v-29" fill="#09170f" stroke="#789781"/><path d="M213 300h34m-34 8h34" stroke="#71fa98"/>
-<path d="m155 129-14 23 6 68 21 20h124l21-20 6-68-14-23" fill="#14251e" stroke="#7b9e88" stroke-width="2"/>
-<path d="m165 110 34-30h62l34 30 11 66-12 73-40 40h-48l-40-40-12-73z" fill="url(#metal)" stroke="url(#edge)" stroke-width="2"/>
-<path d="m165 110 34 17h62l34-17M199 80l8 29h46l8-29" stroke="#d2ebde" stroke-opacity=".45"/>
-<path d="m163 154 32-13h70l32 13-8 48-31 16h-56l-31-16z" fill="#04100a" stroke="#719c7f" stroke-width="2"/>
-<path d="m180 167 32 4 9 15-39-5zm100 0-32 4-9 15 39-5z" fill="#68ff8f" filter="url(#glow)"/>
-<path d="m180 167 32 4 9 15-39-5zm100 0-32 4-9 15 39-5z" fill="#9fffbd"/>
-<path d="m230 162-9 42h18z" fill="#254634"/>
-<path d="m177 218 17 26 36 17 36-17 17-26-28 14h-50z" fill="#203c2c" stroke="#567761"/>
-<path d="M211 245h38m-31 8h24" stroke="#a6ffc1" stroke-width="2"/>
-<path d="m169 211 5 36 32 32m85-68-5 36-32 32" stroke="#6bfa96" stroke-width="2"/>
-<rect x="143" y="160" width="7" height="36" rx="3" fill="#75ff9c"/>
-<rect x="310" y="160" width="7" height="36" rx="3" fill="#75ff9c"/>
-<path d="m214 355 16-9 16 9v18l-16 9-16-9z" fill="#6cff91" fill-opacity=".15" stroke="#85ffac"/><circle cx="230" cy="364" r="5" fill="#a9ffc5"/>
-<g fill="#9cffb9"><circle cx="64" cy="86" r="3"/><circle cx="404" cy="81" r="3"/><circle cx="67" cy="305" r="3"/></g>
-</svg>
-    <div class="hero-trace" aria-hidden="true"><span>01 — BOOKS</span><span>02 — DOCUMENTS</span><span>03 — VOICES</span></div>
+    <div class="illumination" aria-hidden="true">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="7" y="7" width="18" height="18" rx="4"/><path d="M12 2v5m8-5v5M12 25v5m8-5v5M2 12h5m-5 8h5m18-8h5m-5 8h5M11 12h4l1 2 1-2h4v8h-4l-1 1-1-1h-4zM16 14v7"/></svg>
+    </div>
+    <div class="library-brand"><h1>My Library</h1><p>Your space to explore</p></div>
   </header>
 
   <p id="app-message" class="app-message" role="status" hidden></p>
@@ -523,8 +497,8 @@ dialog button {padding:10px 20px;cursor:pointer}
 
 
 
-<script src="library.js?v=34" defer></script>
-<script src="voice.js?v=34" defer></script>
-<script src="app.js?v=34" defer></script>
+<script src="library.js?v=35" defer></script>
+<script src="voice.js?v=35" defer></script>
+<script src="app.js?v=35" defer></script>
 </body>
 </html>

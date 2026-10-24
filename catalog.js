@@ -67,7 +67,6 @@ const LIBRARY = [
   { lang: "ar", kind: "doc", type: "PDF", date: "2023-04-04", title: "الضابطة", link: "files/62.pdf" },
   { lang: "ar", kind: "doc", type: "PDF", date: "2023-04-04", title: "تلخيص شرح التركماني في القياس", link: "files/63.pdf" },
   { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "حواشي الغجراتي على حاشية اليزدي على شرح الخبيصي على تهذيب", link: "files/64.pdf" },
-  { lang: "ar", kind: "book", type: "PDF", date: "2023-04-04", title: "رفع الغاشية عن غوامش الحاشية", author: "المدرس الأفغاني", link: "files/65.pdf" },
   { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "جامع المقدمات", author: "جمع من العلماء", link: "files/66.pdf" },
   { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "متن ألفية ابن مالك", link: "files/67.pdf" },
   { lang: "ar", kind: "book", type: "PDF", date: "2023-02-18", title: "متن التهذيب في المنطق", link: "files/68.pdf" },

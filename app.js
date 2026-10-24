@@ -39,7 +39,7 @@
   window.addEventListener('offline', () => message('You’re offline. Books need internet unless you downloaded a copy.'));
   window.addEventListener('online', () => { $('app-message').hidden = true; });
   if (!navigator.onLine) message('You’re offline. Books need internet unless you downloaded a copy.');
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=37', {updateViaCache:'none'}).catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=38', {updateViaCache:'none'}).catch(() => {});
 })();
 
 if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) location.hash = "ar-study";

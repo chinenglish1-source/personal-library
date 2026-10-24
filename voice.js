@@ -103,7 +103,7 @@
       pending.set(li,prepare);voiceObserver.observe(li);
       const sync=()=>{
         const length=Number.isFinite(audio.duration)?audio.duration:note.duration/1000;
-        if(length>0){seek.disabled=false;seek.value=String(Math.round(audio.currentTime/length*1000));[...wave.children].forEach((bar,i)=>bar.style.background=i/36<Number(seek.value)/1000?'#214c34':'#76a57c');duration.textContent=formatDuration((audio.currentTime||length)*1000);}
+        if(length>0){seek.disabled=false;seek.value=String(Math.round(audio.currentTime/length*1000));[...wave.children].forEach((bar,i)=>bar.style.background=i/36<Number(seek.value)/1000?'var(--wave-played,#214c34)':'var(--wave-rest,#76a57c)');duration.textContent=formatDuration((audio.currentTime||length)*1000);}
         play.textContent=audio.paused?'▶':'Ⅱ';play.setAttribute('aria-label',audio.paused?'Play recording':'Pause recording');
       };
       ['loadedmetadata','durationchange','timeupdate','play','pause','ended'].forEach(event=>audio.addEventListener(event,sync));

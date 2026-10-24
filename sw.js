@@ -1,6 +1,6 @@
-const CACHE = 'library-shell-v32';
+const CACHE = 'library-shell-v33';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['./', 'index.html', 'catalog.js?v=32', 'library.js?v=32', 'app.js?v=32', 'voice.js?v=32', 'study.css?v=32', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'index.html', 'catalog.js?v=33', 'library.js?v=33', 'app.js?v=33', 'voice.js?v=33', 'study.css?v=33', 'future.css?v=33', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new Request(new URL(path, BASE).href, {cache:"reload"})))).then(() => self.skipWaiting()));
 });

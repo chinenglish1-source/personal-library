@@ -91,6 +91,9 @@
         if (store(studyKey, next)) { selected = next; applyView(); }
       });
       li.append(button);
+      const download = el("button", {type:"button", class:"item-download", "aria-label":"Download PDF: " + it.title}, "↓ PDF");
+      download.addEventListener("click", () => downloadPDF(it.link, it.title, download));
+      li.append(download);
       li.append(el("span",{class:"study-progress","aria-hidden":"true"}));
       studySwipe(li,it.link);
     }
@@ -414,8 +417,9 @@
       const message = pages.querySelector(".reader-msg");
       if (message) message.textContent = total ? `Opening… ${Math.min(100, Math.round(loaded / total * 100))}%` : "Opening…";
     };
-    $("reader-download").disabled = true;
-    $("reader-download").textContent = "Download";
+    $("page-jump").hidden = true;
+    $("reader-download").disabled = false;
+    $("reader-download").textContent = "Download PDF";
     rTitle.textContent = title;
     rCount.textContent = "";
     pages.replaceChildren(el("p", { class: "reader-msg", role: "status" }, "Opening…"));
@@ -471,6 +475,8 @@
       target.style.aspectRatio = `${targetVP.width} / ${targetVP.height}`;
       pages.scrollTop = target.offsetTop - pages.offsetTop + target.clientHeight * offset;
       session.ready = true;
+      pageJump.hidden = doc.numPages < 2;
+      updatePageSlider(pageNumber, doc.numPages);
       savePosition();
       // Restore the actual reading page first, before spending time on neighbours.
       await renderPage(doc, target, session);
@@ -488,22 +494,67 @@
     }
   }
 
-  $("reader-download").addEventListener("click", async () => {
-    const doc = openDoc;
-    if (!doc) return;
-    const button = $("reader-download");
-    const title = rTitle.textContent;
-    button.disabled = true;
+  function saveDownload(url, title) {
+    const a = document.createElement("a");
+    a.href = url; a.download = (title || "document").replace(/[\\/:*?"<>|]/g, "_") + ".pdf";
+    document.body.append(a); a.click(); a.remove();
+  }
+  async function downloadPDF(href, title, button) {
+    const file = hostedFiles[href];
+    // Ordinary PDFs use the browser's downloader immediately, without PDF.js.
+    if (!file?.parts) { saveDownload(href, title); return; }
+    if (button.disabled) return;
+    const label = button.textContent; button.disabled = true;
+    button.textContent = "Preparing…";
     try {
-      const data = await doc.getData();
-      const url = URL.createObjectURL(new Blob([data], { type: "application/pdf" }));
-      const a = document.createElement("a");
-      a.href = url; a.download = (title || "document") + ".pdf";
-      document.body.append(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch { if (doc === openDoc) button.textContent = "Retry download"; }
-    finally { if (doc === openDoc) button.disabled = false; }
+      const pieces = []; let received = 0;
+      for (const part of file.parts) {
+        const response = await fetch(part);
+        if (!response.ok) throw Error("Download unavailable");
+        const stream = response.body.getReader();
+        for (;;) {
+          const {done, value} = await stream.read(); if (done) break;
+          pieces.push(value); received += value.byteLength;
+          button.textContent = `Download ${Math.min(100, Math.round(received / file.size * 100))}%`;
+        }
+      }
+      if (received !== file.size) throw Error("Incomplete download");
+      const url = URL.createObjectURL(new Blob(pieces, {type:"application/pdf"}));
+      saveDownload(url, title); setTimeout(() => URL.revokeObjectURL(url), 60000);
+      button.textContent = label;
+    } catch { button.textContent = "Retry download"; }
+    finally { button.disabled = false; }
+  }
+  $("reader-download").addEventListener("click", () => {
+    if (readerSession) downloadPDF(readerSession.href, rTitle.textContent, $("reader-download"));
   });
+
+  const pageSlider = $("page-slider"), pageJump = $("page-jump"), pageLabel = $("page-jump-label");
+  let pageLabelTimer;
+  function updatePageSlider(number, total) {
+    pageJump.classList.add("active");
+    clearTimeout(pageLabelTimer);
+    pageLabelTimer=setTimeout(()=>pageJump.classList.remove("active"),1400);
+    pageSlider.max = String(total); pageSlider.value = String(number);
+    pageSlider.setAttribute("aria-valuetext", `Page ${number} of ${total}`);
+    pageLabel.textContent = `${number} / ${total}`;
+    pageJump.style.setProperty("--page-progress", total > 1 ? (number-1)/(total-1) : 0);
+  }
+  let jumpTimer;
+  function jumpPage() {
+    const session = readerSession; if (!session?.ready) return;
+    const number = Number(pageSlider.value), target = pages.querySelector(`[data-page="${number}"]`);
+    if (!target) return;
+    pages.scrollTop = target.offsetTop - pages.offsetTop;
+    updatePageSlider(number, session.document.numPages);
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(() => {
+      if (session !== readerSession) return;
+      savePosition(); session.pending.clear(); session.pending.add(target); drainPages(session);
+    }, 90);
+  }
+  pageSlider.addEventListener("input", jumpPage);
+  pageSlider.addEventListener("change", () => { jumpPage(); savePosition(); });
 
   async function drainPages(session) {
     if (session.rendering) return;
@@ -553,6 +604,7 @@
 
   function releaseReader() {
     savePosition();
+    clearTimeout(jumpTimer);
     if (observer) observer.disconnect();
     const previous = readerSession;
     readerSession = null;
@@ -593,6 +645,7 @@
     positions[session.href] = {page:Number(box.dataset.page), offset:Math.max(0, Math.min(.99, (top - box.getBoundingClientRect().top) / box.clientHeight)), updated:Date.now()};
     store(positionKey, positions);
     rCount.textContent = `${box.dataset.page} / ${boxes.length}`;
+    updatePageSlider(Number(box.dataset.page), boxes.length);
     const item=itemByHref.get(session.href);
     if(item)item.querySelector(".study-progress").textContent=`Continue · page ${box.dataset.page}`;
   }

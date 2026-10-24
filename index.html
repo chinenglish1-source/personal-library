@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Library</title>
 
-<script src="catalog.js?v=36" defer></script>
+<script src="catalog.js?v=37" defer></script>
 
 <style>
 /* Manuscript palette: parchment, green ink, antique gold. */
@@ -442,7 +442,7 @@ dialog button {padding:10px 20px;cursor:pointer}
 #welcome-read {background:transparent;color:#173f35}
 #welcome-steps {padding:14px;background:#e8dfc8;border-radius:6px;text-align:start}
 </style>
-<link rel="stylesheet" href="study.css?v=36">
+<link rel="stylesheet" href="study.css?v=37">
 </head>
 <body>
 <dialog id="app-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
@@ -492,16 +492,17 @@ dialog button {padding:10px 20px;cursor:pointer}
   <div class="reader-bar">
     <h2 id="reader-title" dir="auto"></h2>
     <span class="meta-r" id="reader-count"></span>
-    <button type="button" class="reader-close" id="reader-download" disabled>Download</button>
+    <button type="button" class="reader-close" id="reader-download" disabled>Download PDF</button>
     <button type="button" class="reader-close" id="reader-close">Close</button>
   </div>
   <div class="pages" id="pages" tabindex="0" aria-label="Document pages"></div>
+  <div id="page-jump" hidden><output id="page-jump-label" for="page-slider">1 / 1</output><input id="page-slider" type="range" min="1" max="1" step="1" value="1" aria-label="Go to page" orient="vertical"></div>
 </div>
 
 
 
-<script src="library.js?v=36" defer></script>
-<script src="voice.js?v=36" defer></script>
-<script src="app.js?v=36" defer></script>
+<script src="library.js?v=37" defer></script>
+<script src="voice.js?v=37" defer></script>
+<script src="app.js?v=37" defer></script>
 </body>
 </html>

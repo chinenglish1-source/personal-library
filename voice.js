@@ -44,7 +44,7 @@
   function controls(next) {
     state = next;
     button.dataset.recording = String(next === 'recording');
-    button.querySelector('.mic-time').textContent = next === 'recording' ? '00:00' : next === 'saving' ? '…' : '';
+    button.querySelector('.mic-time').textContent = next === 'recording' ? '00:00' : (next === 'saving' || next === 'requesting') ? '…' : '';
     button.setAttribute('aria-label', next === 'recording' ? 'Recording. Release to save.' : 'Voices. Tap to listen; hold 1 second to record.');
     button.setAttribute('aria-busy', String(next === 'saving'));
   }
@@ -116,14 +116,14 @@
         try{await audio.play();message('');}catch{message('Tap Play again to allow audio playback.');}
       };
       seek.oninput=()=>{const length=Number.isFinite(audio.duration)?audio.duration:note.duration/1000;if(length>0){audio.currentTime=Number(seek.value)/1000*length;sync();}};
-      del.onclick=async()=>{if(!confirm('Delete this recording?'))return;try{audio.pause();await remove(note.id);await render();}catch{message('Could not delete this recording. Please try again.');}};
+      del.onclick=async()=>{try{del.disabled=true;audio.pause();await remove(note.id);li.remove();if(!list.children.length){const empty=document.createElement('li');empty.textContent='No voices yet.';list.append(empty);}}catch{del.disabled=false;message('Could not delete this recording. Please try again.');}};
     }
   }
   async function finish() {
     if(state === 'requesting') {
       ++generation; cleanup(); controls('idle'); message('Hold again after allowing microphone access.');
     } else if(state === 'recording' && recorder.state !== 'inactive') {
-      controls('saving'); recorder.stop();
+      active.duration=Date.now()-started;clearInterval(timer);controls('saving'); recorder.stop();
     }
   }
   async function start() {
@@ -155,7 +155,7 @@
         queue=queue.then(async()=>{const bytes=await e.data.arrayBuffer();return transaction(['chunks'],'readwrite',tx=>tx.objectStore('chunks').put({id:note.id,index,blob:bytes}));}).catch(()=>{storageFailure();finish();});
       };
       recorder.onstop=async()=>{
-        controls('saving');note.duration=Date.now()-started;cleanup();await queue;
+        controls('saving');note.duration=note.duration??Date.now()-started;cleanup();await queue;
         const blob=new Blob(chunks,{type:note.mime});
         try {
           if(blob.size){
@@ -177,6 +177,7 @@
       };
       recorder.onerror=()=>{message('Recording interrupted. Saving the audio received.');finish();};
       media.getAudioTracks().forEach(track=>track.addEventListener('ended',finish));
+      panel.querySelectorAll('audio').forEach(a=>a.pause());
       recorder.start(1000);controls('recording');message('');
       timer=setInterval(()=>button.querySelector('.mic-time').textContent=formatDuration(Date.now()-started),250);
       navigator.storage?.persist?.().catch(()=>{});
@@ -190,8 +191,9 @@
     clearTimeout(holdTimer);pressing=false;origin=null;button.classList.remove('holding');finish();
   }
   function begin() {
-    if(state!=='idle')return;
-    pressing=true;longHold=false;
+    if(state!=='idle'||pressing)return;
+    pressing=true;longHold=false;button.classList.add('holding');
+    db().catch(()=>{});
     holdTimer=setTimeout(()=>{longHold=true;button.classList.remove('holding');start();},1000);
   }
   button.addEventListener('pointerdown',e=>{

@@ -406,7 +406,7 @@
     readerSession = session;
     lastCard = card;
     if (addHistory) history.pushState({ libraryReader: true, href, title }, "");
-    updateStudyNavigation();
+
     const current = () => readerSession === session;
     const progress = ({ loaded, total }) => {
       if (!current()) return;
@@ -600,14 +600,6 @@
   pages.addEventListener("scroll", () => { clearTimeout(positionTimer); positionTimer = setTimeout(savePosition, 150); }, {passive:true});
   window.addEventListener("pagehide", savePosition);
   document.addEventListener("visibilitychange", () => { if (document.hidden) savePosition(); });
-  function updateStudyNavigation() {
-    const active = readerSession?.study;
-    $("study-navigation").hidden = !active;
-    const i = selected.indexOf(readerSession?.href);
-    $("study-prev").disabled = i <= 0;
-    $("study-next").disabled = i < 0 || i >= selected.length - 1;
-    $("study-index").textContent = `${i + 1} of ${selected.length}`;
-  }
   function switchStudy(direction) {
     if (!readerSession?.study) return;
     const href = selected[selected.indexOf(readerSession.href) + direction];
@@ -617,8 +609,6 @@
     history.replaceState({libraryReader:true,href,title:card.dataset.title}, "");
     openReader(href, card.dataset.title, card, false);
   }
-  $("study-prev").onclick = () => switchStudy(-1);
-  $("study-next").onclick = () => switchStudy(1);
   let swipe;
   pages.addEventListener("touchstart", e => {
     swipe = e.touches.length === 1 && (visualViewport?.scale || 1) <= 1.05 && !String(getSelection()) ? {x:e.touches[0].clientX,y:e.touches[0].clientY,time:Date.now()} : null;

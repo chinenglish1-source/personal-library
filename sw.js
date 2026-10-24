@@ -1,6 +1,6 @@
-const CACHE = 'library-shell-v28';
+const CACHE = 'library-shell-v29';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['./', 'index.html', 'catalog.js?v=28', 'library.js?v=28', 'app.js?v=28', 'voice.js?v=28', 'study.css?v=28', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'index.html', 'catalog.js?v=29', 'library.js?v=29', 'app.js?v=29', 'voice.js?v=29', 'study.css?v=29', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new Request(new URL(path, BASE).href, {cache:"reload"})))).then(() => self.skipWaiting()));
 });
@@ -18,6 +18,19 @@ self.addEventListener('fetch', event => {
   if (!isCover && !isShell) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    // Refresh the app shell at launch, with a bounded offline fallback.
+    if (request.mode === 'navigate') {
+      const fresh = fetch(request).then(async response => {
+        if (!response.ok) throw Error('Navigation failed');
+        await cache.put(request, response.clone());
+        return response;
+      }).catch(() => null);
+      const response = await Promise.race([fresh, new Promise(resolve => setTimeout(() => resolve(null), 1500))]);
+      if (response) return response;
+      const saved = await cache.match(request) || await cache.match(BASE.href);
+      if (saved) return saved;
+      return (await fresh) || Response.error();
+    }
     if (isCover || isShell) {
       const cached = await cache.match(request);
       if (cached) return cached;

@@ -86,3 +86,18 @@ body.reading #pages{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 #voice-list li audio{grid-column:1/-1;margin:8px 0 0}
 body.reading #voice-dock{width:max-content;min-width:64px;max-width:calc(100% - 28px)}
 body.reading #voice-dock>#voices-button{padding:12px 18px}
+
+/* Book covers already carry their titles; preserve accessible link names. */
+.item[data-kind=book] .title,.item[data-kind=book] .by{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+/* Compact Telegram-style voice playback. */
+#voice-list li.voice-message{width:min(350px,100%);display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 10px;background:#e4f2dc;color:#214c34;border:1px solid #b2cba7;border-radius:18px 18px 4px 18px;padding:12px}
+#voice-list .voice-message .voice-play{grid-column:1;grid-row:1/3;border:0;border-radius:50%;width:44px;height:44px;margin:0;padding:0;background:#28754c;color:white;font-size:20px;min-height:44px}
+.voice-track{grid-column:2/-1;grid-row:1;position:relative;min-width:0;height:30px;touch-action:pan-y}
+.voice-wave{display:flex;align-items:center;justify-content:space-between;gap:2px;height:30px;--played:0%}
+.voice-wave i{display:block;flex:1;max-width:4px;border-radius:2px;background:#4c8759}
+.voice-track input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.voice-track:focus-within{outline:2px solid #28754c;outline-offset:3px;border-radius:3px}
+.voice-duration{grid-column:2;grid-row:2;font:12px system-ui;font-variant-numeric:tabular-nums}
+#voice-list li.voice-message time{grid-column:2;grid-row:3;margin:0;font:11px system-ui;color:#42694a;align-self:center}
+#voice-list .voice-message .voice-delete{grid-column:3;grid-row:2/4;align-self:center;background:none;border:0;min-height:44px;margin:0;padding:4px;font:12px system-ui;color:#685040}
+#voice-list .voice-message audio{display:none}

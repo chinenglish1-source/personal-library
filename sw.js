@@ -1,6 +1,6 @@
-const CACHE = 'library-shell-v30';
+const CACHE = 'library-shell-v31';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['./', 'index.html', 'catalog.js?v=30', 'library.js?v=30', 'app.js?v=30', 'voice.js?v=30', 'study.css?v=30', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'index.html', 'catalog.js?v=31', 'library.js?v=31', 'app.js?v=31', 'voice.js?v=31', 'study.css?v=31', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new Request(new URL(path, BASE).href, {cache:"reload"})))).then(() => self.skipWaiting()));
 });
@@ -12,12 +12,27 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || url.origin !== BASE.origin || !url.pathname.startsWith(BASE.pathname)) return;
   // Keep large PDFs out of automatic storage. Downloads remain a deliberate choice.
   if (url.pathname.startsWith(new URL('files/', BASE).pathname)) return;
+  const isOpening = url.pathname.startsWith(new URL('openings/', BASE).pathname);
   const isCover = url.pathname.startsWith(new URL('covers/', BASE).pathname);
   const isViewer = /\/vendor\/pdf(?:\.worker)?\.min\.js$/.test(url.pathname);
   const isShell = isViewer || request.mode === 'navigate' || SHELL.some(path => new URL(path, BASE).pathname === url.pathname);
-  if (!isCover && !isShell) return;
+  if (!isCover && !isShell && !isOpening) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    // Retain at most four small, content-hashed opening packets, never full books.
+    if (isOpening) {
+      const saved = await cache.match(request);
+      if (saved) return saved;
+      const response = await fetch(request);
+      if (response.ok) {
+        try {
+          await cache.put(request, response.clone());
+          const keys = (await cache.keys()).filter(key => new URL(key.url).pathname.includes('/openings/'));
+          await Promise.all(keys.slice(0, Math.max(0, keys.length - 4)).map(key => cache.delete(key)));
+        } catch {} // Full storage must not stop reading.
+      }
+      return response;
+    }
     // Refresh the app shell at launch, with a bounded offline fallback.
     if (request.mode === 'navigate') {
       const fresh = fetch(request).then(async response => {

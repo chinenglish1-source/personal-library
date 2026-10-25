@@ -9,6 +9,13 @@
    link   optional. Only cards with a link lift on hover ("this opens").
    ========================================================================== */
 const LIBRARY = [
+  {"lang": "en", "kind": "doc", "type": "DOCX", "date": "2026-10-25", "title": "1 english (Word)", "link": "files/69.pdf"},
+  {"lang": "en", "kind": "doc", "type": "PDF", "date": "2026-10-25", "title": "1 english (PDF)", "link": "files/70.pdf"},
+  {"lang": "en", "kind": "doc", "type": "DOCX", "date": "2026-10-25", "title": "Chinese (2)", "link": "files/71.pdf"},
+  {"lang": "en", "kind": "doc", "type": "DOCX", "date": "2026-10-25", "title": "english (3)", "link": "files/72.pdf"},
+  {"lang": "ar", "kind": "doc", "type": "DOCX", "date": "2026-10-25", "title": "منطق (8)", "link": "files/73.pdf"},
+  {"lang": "ar", "kind": "doc", "type": "DOCX", "date": "2026-10-25", "title": "حاشية", "link": "files/74.pdf"},
+
   { lang: "en", kind: "doc", type: "PDF", date: "2024-06-26", title: "2", link: "files/02.pdf" },
   { lang: "en", kind: "doc", type: "PDF", date: "2024-06-21", title: "chinese", link: "files/03.pdf" },
   { lang: "en", kind: "doc", type: "PDF", date: "2024-06-21", title: "english 1", link: "files/04.pdf" },

@@ -18,9 +18,17 @@
 
   const studyKey = "library.study.v1", positionKey = "library.positions.v1";
   function readStore(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; } }
+  const deviceKey = "library.device.preferences.v1";
+  let devicePrefs = readStore(deviceKey, {});
+  if (!devicePrefs || typeof devicePrefs !== 'object' || Array.isArray(devicePrefs)) devicePrefs = {};
+  devicePrefs = {order:Array.isArray(devicePrefs.order)?devicePrefs.order:[], hidden:Array.isArray(devicePrefs.hidden)?devicePrefs.hidden:[]};
+  const deviceItems = new Map();
+  let editingDevice = false;
+  function saveDevice(next) { if (!store(deviceKey, next)) return false; devicePrefs = next; return true; }
+  function deviceNotice(text) { $("device-notice").textContent = text; $("device-notice").hidden = false; }
   let selected = readStore(studyKey, []);
   if (!Array.isArray(selected)) selected = [];
-  selected = [...new Set(selected)].filter(href => LIBRARY.some(it => it.link === href));
+  selected = [...new Set(selected)].filter(href => (String(href).startsWith("local:") || LIBRARY.some(it => it.link === href)));
   let positions = readStore(positionKey, {});
   if (typeof positions !== "object" || Array.isArray(positions)) positions = {};
   function store(key, value) {
@@ -94,6 +102,15 @@
       li.append(el("span",{class:"study-progress","aria-hidden":"true"}));
       studySwipe(li,it.link);
     }
+    if (it.link) {
+      const controls = el("div", {class:"device-item-controls", hidden:true});
+      for (const [text, action, label] of [["↑","earlier","Move earlier"],["↓","later","Move later"],["Delete","delete","Delete from my device library"]]) {
+        const button = el("button", {type:"button", "data-action":action, "aria-label":`${label}: ${it.title}`}, text);
+        button.onclick = () => manageDeviceItem(it.link, action);
+        controls.append(button);
+      }
+      li.append(controls);
+    }
     return li;
   }
 
@@ -139,6 +156,21 @@
       li.hidden = kind === "study" ? !active : li.dataset.kind !== kind;
       li.style.order = kind === "study" ? selected.indexOf(button?.dataset.href) : "";
     }
+    const rank = new Map(devicePrefs.order.map((href,index)=>[href,index]));
+    items.sort((a,b)=>(rank.get(a.querySelector('a.card')?.getAttribute('href')) ?? 1e9)-(rank.get(b.querySelector('a.card')?.getAttribute('href')) ?? 1e9));
+    for (const li of items) {
+      const href = li.querySelector('a.card')?.getAttribute('href');
+      if (devicePrefs.hidden.includes(href)) li.hidden = true;
+      const controls = li.querySelector('.device-item-controls');
+      if (controls) controls.hidden = !editingDevice;
+    }
+    const visible = items.filter(li=>!li.hidden).sort((a,b)=>kind==='study'?Number(a.style.order)-Number(b.style.order):0);
+    visible.forEach((li,index)=>{
+      li.querySelector('[data-action="earlier"]').disabled = index === 0;
+      li.querySelector('[data-action="later"]').disabled = index === visible.length-1;
+    });
+    $("device-tools").hidden = location.hash === '#voices';
+    $("device-trash").hidden = !editingDevice || !devicePrefs.hidden.length;
     grid.append(...(kind === "study" ? [...items].sort((a,b) => Number(a.style.order)-Number(b.style.order)) : items));
     updateStatus();
   }
@@ -276,6 +308,11 @@
       cMapPacked: true,
       standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
     };
+    if (url.startsWith('local:')) {
+      const bytes = await DeviceLibrary.read(url);
+      if (!bytes) throw Error('This document is no longer stored on this device.');
+      return {...options, data:new Uint8Array(bytes), length:bytes.byteLength};
+    }
     const file = hosted && hostedFiles[url];
     if (!file || !file.size) return { ...options, url };
     // Known sizes avoid an initial whole-file probe. Map ranges across 16 MiB
@@ -348,11 +385,12 @@
     box.dataset.state = "loading";
     let doc = null;
     try {
-      if (hosted && hostedFiles[box.dataset.src]) {
+      const localCover = deviceItems.get(box.dataset.src)?.cover;
+      if (localCover || (hosted && hostedFiles[box.dataset.src])) {
         const cover = new Image();
         cover.alt = "";
         cover.fetchPriority = box.getBoundingClientRect().top < innerHeight ? "high" : "low";
-        cover.src = hostedFiles[box.dataset.src].cover;
+        cover.src = localCover || hostedFiles[box.dataset.src].cover;
         await cover.decode();
         // CSS sizing stays valid even when a section hides during decoding.
         const volume = el("span", { class: "book-volume" }, cover);
@@ -363,6 +401,7 @@
         box.dataset.state = "ready";
         return;
       }
+      await loadPDF();
       doc = await pdfjsLib.getDocument(await pdfOptions(box.dataset.src)).promise;
       const page = await doc.getPage(1);
       const base = page.getViewport({ scale: 1 });
@@ -497,6 +536,17 @@
     document.body.append(a); a.click(); a.remove();
   }
   async function downloadPDF(href, title, button) {
+    if (href.startsWith('local:')) {
+      button.disabled = true;
+      try {
+        const bytes = await DeviceLibrary.read(href);
+        if (!bytes) throw Error('File unavailable');
+        const url = URL.createObjectURL(new Blob([bytes], {type:'application/pdf'}));
+        saveDownload(url, title); setTimeout(()=>URL.revokeObjectURL(url),60000);
+      } catch { deviceNotice('Could not download this local file. Please try again.'); }
+      finally { button.disabled = false; }
+      return;
+    }
     const file = hostedFiles[href];
     // Ordinary PDFs use the browser's downloader immediately, without PDF.js.
     if (!file?.parts) { saveDownload(href, title); return; }
@@ -652,7 +702,8 @@
   document.addEventListener("visibilitychange", () => { if (document.hidden) savePosition(); });
   function switchStudy(direction) {
     if (!readerSession?.study) return;
-    const href = selected[selected.indexOf(readerSession.href) + direction];
+    const visibleStudy = selected.filter(href=>!devicePrefs.hidden.includes(href) && itemByHref.has(href));
+    const href = visibleStudy[visibleStudy.indexOf(readerSession.href) + direction];
     if (!href) return;
     const card = [...grid.querySelectorAll("a.card")].find(a => a.getAttribute("href") === href);
     if (!card) return;
@@ -719,6 +770,102 @@
 
   // A reload starts on the shelf, so discard an old reader history marker.
   if (history.state?.libraryReader) history.replaceState(null, "");
+  function manageDeviceItem(href, action) {
+    if (action === 'delete') {
+      if (saveDevice({...devicePrefs, hidden:[...new Set([...devicePrefs.hidden,href])]})) {
+        applyView(); deviceNotice('Deleted from this device. Restore it from Deleted.');
+      }
+      return;
+    }
+    const visible = [...grid.children].filter(li=>!li.hidden).map(li=>li.querySelector('a.card')?.getAttribute('href'));
+    const index = visible.indexOf(href), other = index + (action === 'earlier' ? -1 : 1);
+    if (index < 0 || other < 0 || other >= visible.length) return;
+    const next = kind === 'study' ? [...selected] : items.map(li=>li.querySelector('a.card')?.getAttribute('href'));
+    const a = next.indexOf(href), b = next.indexOf(visible[other]);
+    [next[a],next[b]] = [next[b],next[a]];
+    if (kind === 'study') { if (!store(studyKey,next)) return; selected = next; }
+    else if (!saveDevice({...devicePrefs,order:next})) return;
+    applyView();
+    itemByHref.get(href)?.querySelector(`[data-action="${action}"]`)?.focus({preventScroll:true});
+  }
+  function showDeleted() {
+    const list = $('device-trash-list'); list.replaceChildren();
+    for (const href of devicePrefs.hidden) {
+      const item = deviceItems.get(href) || LIBRARY.find(item=>item.link===href);
+      if (!item) continue;
+      const restore = el('button',{type:'button'},'Restore');
+      restore.onclick = () => {
+        if (saveDevice({...devicePrefs,hidden:devicePrefs.hidden.filter(id=>id!==href)})) { applyView(); showDeleted(); }
+      };
+      list.append(el('li',{},el('span',{dir:'auto'},item.title),restore));
+    }
+    if (!list.children.length) list.append(el('li',{},'No deleted items.'));
+  }
+  $('device-edit').onclick = () => {
+    editingDevice = !editingDevice;
+    $('device-edit').textContent = editingDevice ? 'Done' : 'Edit my library';
+    $('device-edit').setAttribute('aria-pressed',String(editingDevice));
+    $('device-help').hidden = !editingDevice;
+    applyView();
+  };
+  $('device-trash').onclick = () => { showDeleted(); $('device-trash-dialog').showModal(); };
+  $('device-trash-close').onclick = () => $('device-trash-dialog').close();
+  $('device-add').onclick = () => { $('device-kind').value = kind === 'book' ? 'book' : 'doc'; $('device-add-dialog').showModal(); };
+  $('device-add-close').onclick = () => $('device-add-dialog').close();
+  function appendDeviceItem(item) {
+    if (itemByHref.has(item.link)) return;
+    deviceItems.set(item.link,item);
+    const li = card(item); items.push(li); itemByHref.set(item.link,li); grid.append(li);
+    const preview = li.querySelector('.preview'); if (preview) thumbObserver.observe(preview);
+  }
+  const deviceReady = DeviceLibrary.list().then(localItems => {
+    localItems.forEach(appendDeviceItem); applyView();
+  }).catch(() => { deviceNotice('Local documents could not be loaded. Your online library is still available.'); });
+  let importing = false;
+  $('device-add-dialog').addEventListener('cancel',event=>{if(importing)event.preventDefault();});
+  $('device-files').onchange = async () => {
+    const files = [...$('device-files').files]; if (!files.length || importing) return;
+    importing = true; $('device-files').disabled = true; $('device-add-close').disabled = true; $('device-kind').disabled = true;
+    const section = $('device-kind').value;
+    let added = 0; const errors = [];
+    try {
+      await deviceReady; await loadPDF();
+      for (const file of files) {
+        let task;
+        try {
+          $('device-import-status').textContent = `Adding ${file.name}…`;
+          if (!/\.pdf$/i.test(file.name)) throw Error('Choose a PDF file.');
+          if (file.size > 100*1024*1024) throw Error('Use a PDF smaller than 100 MB.');
+          const bytes = await file.arrayBuffer();
+          if (!new TextDecoder().decode(bytes.slice(0,1024)).includes('%PDF-')) throw Error('This is not a valid PDF.');
+          task = pdfjsLib.getDocument({data:new Uint8Array(bytes.slice(0)),isEvalSupported:false,worker:readerWorker()});
+          let rejectPassword;
+          const passwordFailure = new Promise((resolve,reject)=>{rejectPassword=reject;});
+          task.onPassword = () => rejectPassword(Error('Unlock this PDF before adding it.'));
+          const doc = await Promise.race([task.promise,passwordFailure]), page = await doc.getPage(1), base = page.getViewport({scale:1});
+          const vp = page.getViewport({scale:Math.min(420/base.width,600/base.height)});
+          const canvas = document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
+          await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+          const item = {link:'local:'+crypto.randomUUID(),title:file.name.replace(/\.pdf$/i,''),kind:section,lang:'en',type:'PDF',date:new Date().toISOString().slice(0,10),cover:canvas.toDataURL('image/jpeg',.82),size:file.size};
+          await DeviceLibrary.save(item,bytes);
+          appendDeviceItem(item); added++;
+          saveDevice({...devicePrefs, order:[item.link,...items.map(li=>li.querySelector('a.card')?.getAttribute('href')).filter(href=>href!==item.link)]});
+          applyView();
+        } catch(error) { errors.push(`${file.name}: ${error.name === 'QuotaExceededError' ? 'Device storage is full.' : (error.message || 'Could not add this PDF.')}`); }
+        finally { if(task)await task.destroy().catch(()=>{}); }
+      }
+      if (added) {
+        setView(lang, section);
+        deviceNotice(`${added} ${added===1?'file added':'files added'} on this device only.`);
+        if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{});
+      }
+      $('device-import-status').textContent = [`${added} ${added===1?'file added':'files added'}.`,...errors].join(' ');
+    } catch { $('device-import-status').textContent = 'Could not open the PDF importer. Please try again.'; }
+    finally {
+      importing = false; $('device-files').disabled = false; $('device-add-close').disabled = false; $('device-kind').disabled = false; $('device-files').value = '';
+    }
+  };
+
   fromHash();
   applyView();
 })();

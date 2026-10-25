@@ -51,3 +51,9 @@ The app shows its interface before loading PDF.js. Covers are lazy-loaded; no PD
 All sixty-three PDFs have content-addressed `openings/*.bin` files containing the original byte ranges used during initial page rendering. They are requested only after a book is opened, never at app startup. Other pages still use byte ranges from unchanged originals. Invalid or missing packets fall back to ordinary ranges. One PDF worker starts alongside the packet and is shared across reader sessions. Packets use precise 4 KiB slices; later pages use a deduplicated, bounded 64 KiB network-block cache to avoid tiny sequential downloads.
 
 When replacing an existing PDF, remove its `opening` property until a packet has been regenerated and checked against the new original. Never reuse an old packet for changed contents, even if its byte size matches. Original PDF and split-part files remain the download source.
+
+## Device-only library editing
+
+Edit my library exposes Move earlier/later and Delete on each card. These affect only the current browser; Deleted restores hidden items. Study ordering uses the existing study selection key. Public catalogue files and other visitors are unchanged. There is no owner authentication or cross-device sync.
+
+Add imports PDF files (up to 100 MiB each) into Books or Docs. PDF validation and first-page thumbnails run locally. `local-library.js` stores metadata separately from ArrayBuffer contents in IndexedDB `library.device.v1`; the shelf loads metadata only. `library.device.preferences.v1` stores order and hidden IDs. Local IDs are stable across reloads so reader progress persists. Local Delete is recoverable hiding, retaining the file for Restore. Clearing browser data removes local additions; keep originals. DOCX must be exported to PDF before using this local importer.

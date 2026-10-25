@@ -114,3 +114,15 @@ body.reading #voice-dock>#voices-button{padding:12px 18px}
 body.reading #pages{padding-right:38px}#page-slider:focus-visible{outline:2px solid #b5a47e;outline-offset:1px}
 #page-jump-label{opacity:0;transition:opacity 120ms ease}#page-jump.active #page-jump-label,#page-jump:focus-within #page-jump-label,#page-jump:hover #page-jump-label{opacity:1}
 @media(prefers-reduced-motion:reduce){#page-jump-label{transition:none}}
+/* Personal shelf controls: all changes and imports stay in this browser. */
+#device-tools{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin:0 0 16px;font:14px system-ui}
+#device-tools[hidden],.device-item-controls[hidden]{display:none!important}
+#device-tools button,.device-item-controls button,#device-add-dialog button,#device-trash-dialog button{min-height:44px;border:1px solid #b5a47e;border-radius:12px;padding:8px 12px;background:#173f35;color:#fff8e9;font:600 14px system-ui;cursor:pointer;touch-action:manipulation}
+#device-help,#device-notice{flex-basis:100%;margin:0;color:var(--ink,#f6f0e3);text-align:start;line-height:1.5}
+.device-item-controls{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:10px 4px 16px}
+.device-item-controls button{min-width:44px}.device-item-controls button:disabled{opacity:.4;cursor:default}
+#device-add-dialog,#device-trash-dialog{max-width:min(440px,calc(100vw - 32px));max-height:80dvh;overflow:auto;box-sizing:border-box;background:#f6f0e3;color:#173f35;border:1px solid #b5a47e;border-radius:20px;padding:20px;font:16px/1.5 system-ui}
+#device-add-dialog h2,#device-trash-dialog h2{font-size:22px;margin-top:0}
+#device-add-dialog label{display:block;margin:16px 0}#device-kind{padding:10px;background:#fff9ee;border:1px solid #b5a47e;color:#173f35;border-radius:8px;font:inherit}
+#device-files{display:block;width:100%;max-width:100%;font:14px system-ui;margin-top:8px}#device-add-dialog p{font-size:13px}
+#device-trash-list{padding:0;list-style:none}#device-trash-list li{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #b5a47e;padding:12px 0}#device-trash-list span{overflow-wrap:anywhere}

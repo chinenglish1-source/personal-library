@@ -126,3 +126,10 @@ body.reading #pages{padding-right:38px}#page-slider:focus-visible{outline:2px so
 #device-add-dialog label{display:block;margin:16px 0}#device-kind{padding:10px;background:#fff9ee;border:1px solid #b5a47e;color:#173f35;border-radius:8px;font:inherit}
 #device-files{display:block;width:100%;max-width:100%;font:14px system-ui;margin-top:8px}#device-add-dialog p{font-size:13px}
 #device-trash-list{padding:0;list-style:none}#device-trash-list li{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #b5a47e;padding:12px 0}#device-trash-list span{overflow-wrap:anywhere}
+
+/* Lift and move covers like phone icons. */
+#grid .card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#grid.device-editing .card{cursor:grab;outline:1px dashed #b5a47e88;outline-offset:3px}
+#grid .shelf-placeholder{opacity:.25}
+.shelf-ghost{position:fixed!important;left:0;top:0;margin:0!important;z-index:10000;pointer-events:none!important;box-sizing:border-box;opacity:.95;filter:drop-shadow(0 12px 16px #0009);will-change:transform}
+.shelf-dragging,.shelf-dragging *{cursor:grabbing!important;-webkit-user-select:none;user-select:none}

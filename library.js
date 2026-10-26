@@ -53,10 +53,11 @@
     let drag=null;
     const reset=()=>{li.style.transform='';li.classList.remove('swiping');drag=null;};
     li.addEventListener('pointerdown',e=>{
-      if(kind!=='study'||e.button!==0||!e.isPrimary||e.target.closest('button')||(window.visualViewport?.scale||1)>1.05||String(getSelection())){reset();return;}
+      if(editingDevice||kind!=='study'||e.button!==0||!e.isPrimary||e.target.closest('button')||(window.visualViewport?.scale||1)>1.05||String(getSelection())){reset();return;}
       drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,horizontal:false};
     });
     li.addEventListener('pointermove',e=>{
+      if(editingDevice){reset();return;}
       if(!drag||e.pointerId!==drag.id)return;
       const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
       if(!drag.horizontal&&Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)){reset();return;}
@@ -65,6 +66,7 @@
       if(drag.horizontal){drag.dx=Math.min(0,dx);li.style.transform=`translate3d(${drag.dx}px,0,0)`;suppressStudyClickUntil=Date.now()+500;}
     });
     li.addEventListener('pointerup',e=>{
+      if(editingDevice){reset();return;}
       if(!drag||e.pointerId!==drag.id)return;
       const remove=drag.horizontal&&-drag.dx>Math.max(95,li.clientWidth*.32);
       const dx=drag.dx;reset();
@@ -77,6 +79,95 @@
     li.addEventListener('lostpointercapture',e=>{if(e.target===li)reset();});
     li.addEventListener('touchstart',e=>{if(e.touches.length>1)reset();},{passive:true});
   }
+
+  // Hold a cover to lift it; scrolling before the hold remains ordinary scrolling.
+  let shelfDrag = null;
+  function endShelfDrag(commit = false) {
+    const d = shelfDrag; if (!d) return;
+    shelfDrag = null; clearTimeout(d.timer); cancelAnimationFrame(d.frame);
+    if (!d.active) return;
+    d.ghost.remove(); d.li.classList.remove('shelf-placeholder');
+    document.body.classList.remove('shelf-dragging');
+    suppressStudyClickUntil = Date.now() + 800;
+    if (commit) {
+      const order = [...grid.children].map(li=>li.querySelector('a.card')?.getAttribute('href')).filter(Boolean);
+      if (kind === 'study') {
+        const next = order.filter(href=>selected.includes(href));
+        if (store(studyKey,next)) selected = next;
+      } else saveDevice({...devicePrefs,order});
+    }
+    applyView();
+  }
+  function moveShelfDrag(x,y) {
+    const d=shelfDrag; if(!d)return;
+    d.x=x;d.y=y;
+    if(!d.active) {
+      if(Math.hypot(x-d.startX,y-d.startY)>9)endShelfDrag();
+      return;
+    }
+    d.ghost.style.transform=`translate3d(${x-d.offsetX}px,${y-d.offsetY}px,0) scale(1.035)`;
+    const target=document.elementFromPoint(x,y)?.closest('#grid > .item');
+    if(target && target!==d.li && !target.hidden) {
+      const children=[...grid.children];
+      grid.insertBefore(d.li,children.indexOf(d.li)<children.indexOf(target)?target.nextSibling:target);
+      if(kind==='study')[...grid.children].forEach((li,i)=>li.style.order=i);
+    }
+  }
+  function beginShelfDrag(li,card,x,y) {
+    endShelfDrag();
+    const d=shelfDrag={li,x,y,startX:x,startY:y,active:false};
+    d.timer=setTimeout(()=>{
+      if(shelfDrag!==d)return;
+      setDeviceEditing(true);
+      d.active=true;
+      const r=card.getBoundingClientRect();
+      d.offsetX=Math.min(r.width,Math.max(0,d.x-r.left));d.offsetY=Math.min(r.height,Math.max(0,d.y-r.top));
+      d.ghost=card.cloneNode(true);d.ghost.removeAttribute('href');d.ghost.setAttribute('aria-hidden','true');
+      d.ghost.classList.add('shelf-ghost');d.ghost.style.width=r.width+'px';
+      document.body.append(d.ghost);li.classList.add('shelf-placeholder');document.body.classList.add('shelf-dragging');
+      suppressStudyClickUntil=Date.now()+800;
+      moveShelfDrag(d.x,d.y);
+      const scroll=()=>{
+        if(shelfDrag!==d)return;
+        const bottom=innerHeight-110;
+        const speed=d.y<90?-Math.min(15,(90-d.y)/4):d.y>bottom?Math.min(15,(d.y-bottom)/4):0;
+        if(speed){window.scrollBy(0,speed);moveShelfDrag(d.x,d.y);}
+        d.frame=requestAnimationFrame(scroll);
+      };d.frame=requestAnimationFrame(scroll);
+    },500);
+  }
+  function enableShelfDrag(li,card) {
+    card.draggable=false;
+    card.addEventListener('contextmenu',e=>e.preventDefault());
+    card.addEventListener('dragstart',e=>e.preventDefault());
+    card.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='touch'||e.button!==0)return;
+      beginShelfDrag(li,card,e.clientX,e.clientY);
+    });
+    card.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1||(window.visualViewport?.scale||1)>1.05){endShelfDrag();return;}
+      const t=e.touches[0];beginShelfDrag(li,card,t.clientX,t.clientY);
+    },{passive:true});
+    card.addEventListener('keydown',e=>{
+      if(!editingDevice||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
+      e.preventDefault();manageDeviceItem(card.getAttribute('href'),['ArrowLeft','ArrowUp'].includes(e.key)?'earlier':'later');
+    });
+  }
+  window.addEventListener('pointermove',e=>{if(e.pointerType!=='touch')moveShelfDrag(e.clientX,e.clientY);});
+  window.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')endShelfDrag(true);});
+  window.addEventListener('pointercancel',e=>{if(e.pointerType!=='touch')endShelfDrag();});
+  window.addEventListener('touchmove',e=>{
+    if(!shelfDrag)return;
+    if(e.touches.length!==1){endShelfDrag();return;}
+    if(shelfDrag.active)e.preventDefault();
+    moveShelfDrag(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:false});
+  window.addEventListener('touchend',()=>endShelfDrag(true));
+  window.addEventListener('touchcancel',()=>endShelfDrag());
+  window.addEventListener('hashchange',()=>endShelfDrag());
+  window.addEventListener('blur',()=>endShelfDrag());
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)endShelfDrag();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')endShelfDrag();});
   function card(it) {
     const preview = it.link
       ? el("div", { class: "preview", "data-src": it.link, "aria-hidden": "true" },
@@ -104,12 +195,13 @@
     }
     if (it.link) {
       const controls = el("div", {class:"device-item-controls", hidden:true});
-      for (const [text, action, label] of [["↑","earlier","Move earlier"],["↓","later","Move later"],["Delete","delete","Delete from my device library"]]) {
+      for (const [text, action, label] of [["Delete","delete","Delete from my device library"]]) {
         const button = el("button", {type:"button", "data-action":action, "aria-label":`${label}: ${it.title}`}, text);
         button.onclick = () => manageDeviceItem(it.link, action);
         controls.append(button);
       }
       li.append(controls);
+      enableShelfDrag(li,c);
     }
     return li;
   }
@@ -164,11 +256,6 @@
       const controls = li.querySelector('.device-item-controls');
       if (controls) controls.hidden = !editingDevice;
     }
-    const visible = items.filter(li=>!li.hidden).sort((a,b)=>kind==='study'?Number(a.style.order)-Number(b.style.order):0);
-    visible.forEach((li,index)=>{
-      li.querySelector('[data-action="earlier"]').disabled = index === 0;
-      li.querySelector('[data-action="later"]').disabled = index === visible.length-1;
-    });
     $("device-tools").hidden = location.hash === '#voices';
     $("device-trash").hidden = !editingDevice || !devicePrefs.hidden.length;
     grid.append(...(kind === "study" ? [...items].sort((a,b) => Number(a.style.order)-Number(b.style.order)) : items));
@@ -748,7 +835,7 @@
   });
 
   grid.addEventListener("click", (e) => {
-    if(Date.now()<suppressStudyClickUntil){e.preventDefault();return;}
+    if(editingDevice||Date.now()<suppressStudyClickUntil){e.preventDefault();return;}
     const a = e.target.closest("a.card");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     const href = a.getAttribute('href');
@@ -794,7 +881,7 @@
     if (kind === 'study') { if (!store(studyKey,next)) return; selected = next; }
     else if (!saveDevice({...devicePrefs,order:next})) return;
     applyView();
-    itemByHref.get(href)?.querySelector(`[data-action="${action}"]`)?.focus({preventScroll:true});
+    itemByHref.get(href)?.querySelector('a.card')?.focus({preventScroll:true});
   }
   function showDeleted() {
     const list = $('device-trash-list'); list.replaceChildren();
@@ -809,13 +896,15 @@
     }
     if (!list.children.length) list.append(el('li',{},'No deleted items.'));
   }
-  $('device-edit').onclick = () => {
-    editingDevice = !editingDevice;
+  function setDeviceEditing(enabled) {
+    editingDevice = enabled;
+    grid.classList.toggle('device-editing',enabled);
     $('device-edit').textContent = editingDevice ? 'Done' : 'Edit my library';
     $('device-edit').setAttribute('aria-pressed',String(editingDevice));
     $('device-help').hidden = !editingDevice;
     applyView();
   };
+  $('device-edit').onclick = () => setDeviceEditing(!editingDevice);
   $('device-trash').onclick = () => { showDeleted(); $('device-trash-dialog').showModal(); };
   $('device-trash-close').onclick = () => $('device-trash-dialog').close();
   $('device-add').onclick = () => { $('device-kind').value = kind === 'book' ? 'book' : 'doc'; $('device-add-dialog').showModal(); };

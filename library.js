@@ -758,7 +758,8 @@
       destination.searchParams.set('file',href);
       destination.searchParams.set('title',a.dataset.title);
       const link = document.createElement('a'); link.href = destination.href;
-      link.target = '_blank'; link.rel = 'noopener';
+      // Keep private IndexedDB in the same browser/PWA storage context.
+      link.target = href.startsWith('local:') ? '_self' : '_blank'; link.rel = 'noopener';
       document.body.append(link); link.click(); link.remove();
     }
     // Ordinary PDFs follow their real URL into the browser's native viewer.
